@@ -171,9 +171,7 @@
                 </constraints>
                 <properties>
                   <editable value="false"/>
-                  <model>
-                    <item value="employee"/>
-                  </model>
+                  <model/>
                 </properties>
               </component>
               <component id="c26b3" class="javax.swing.JLabel">
