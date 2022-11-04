@@ -1,7 +1,5 @@
 import javax.swing.*;
-import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class DbMgr {
     JPanel Show;
@@ -20,11 +18,7 @@ public class DbMgr {
     private boolean shouldAutoCommit;
 
     public DbMgr() {
-        InsertRowButton.addActionListener(e -> {
-            CreateRowDialog dialog = new CreateRowDialog();
-            dialog.pack();
-            dialog.setVisible(true);
-        });
+        InsertRowButton.addActionListener(DbMgr::HandleInsertRow);
         CancelOperationButton.addActionListener(e -> {
             SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose();
         });
@@ -45,5 +39,33 @@ public class DbMgr {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+    }
+
+    private static void HandleInsertRow(ActionEvent e) {
+        JTextField firstName = new JTextField();
+        JTextField lastName = new JTextField();
+        JPasswordField password = new JPasswordField();
+        final JComponent[] inputs = new JComponent[]{
+                new JLabel("First"),
+                firstName,
+                new JLabel("Last"),
+                lastName,
+                new JLabel("Password"),
+                password
+        };
+        int result = JOptionPane.showConfirmDialog(
+                null,
+                inputs,
+                "添加一行",
+                JOptionPane.DEFAULT_OPTION
+        );
+        if (result == JOptionPane.OK_OPTION) {
+            System.out.println("You entered " +
+                    firstName.getText() + ", " +
+                    lastName.getText() + ", " +
+                    password.getText());
+        } else {
+            System.out.println("User canceled / closed the dialog, result = " + result);
+        }
     }
 }
