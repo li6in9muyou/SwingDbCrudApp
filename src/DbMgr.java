@@ -18,6 +18,7 @@ public class DbMgr {
     private boolean shouldAutoCommit;
 
     public DbMgr() {
+        QueryResultTable.setModel(new DatabaseTableDataModel("employee"));
         InsertRowButton.addActionListener(DbMgr::HandleInsertRow);
         CancelOperationButton.addActionListener(e -> {
             SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose();
