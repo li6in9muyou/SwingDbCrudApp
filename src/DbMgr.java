@@ -19,10 +19,7 @@ public class DbMgr {
     private JComboBox<String> SelectedTable;
     private boolean shouldAutoCommit;
 
-    public DbMgr(String[] table_names) {
-        for (String name : table_names) {
-            SelectedTable.addItem(name);
-        }
+    public DbMgr() {
         InsertRowButton.addActionListener(e -> {
             CreateRowDialog dialog = new CreateRowDialog();
             dialog.pack();
@@ -31,5 +28,22 @@ public class DbMgr {
         CancelOperationButton.addActionListener(e -> {
             SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose();
         });
+    }
+
+    public static void main(String[] args) {
+        for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+            if (info.getName().equals("Nimbus")) {
+                try {
+                    UIManager.setLookAndFeel(info.getClassName());
+                } catch (Exception ignored) {
+                }
+                break;
+            }
+        }
+        JFrame frame = new JFrame("数据表管理器");
+        frame.setContentPane(new DbMgr().Show);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
     }
 }
