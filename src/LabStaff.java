@@ -45,7 +45,7 @@ public class LabStaff {
         short id = 0;
         double salary = 0;
         String job;
-        String sqlstmt = "select name, job, salary from staff where STAFF.DEPT = 10";
+        String sqlstmt = "select name, job, salary from staff";
         String s;
         int mydeptno;
         int SQLCode;
@@ -76,27 +76,57 @@ public class LabStaff {
             /* prepareStatement method                                             */
 
 
-            PreparedStatement pstmt = sample.prepareStatement(sqlstmt);
+            ResultSet rs = null;
+            PreparedStatement pstmt = sample.prepareStatement(
+                    sqlstmt,
+                    rs.TYPE_SCROLL_INSENSITIVE,
+                    rs.CONCUR_READ_ONLY
+            );
+            rs = pstmt.executeQuery();
             /* (7) Execute the SQL statement                                       */
             /*     The number of rows modified by the update statment should be    */
             /*     saved in the variable named updateCount                         */
+            String salary_text, outline;
+            rs.next();
+            name = rs.getString(1);
+            job = rs.getString(2);
+            salary = rs.getFloat(3);
+            salary_text = "%.2f".formatted(salary);
+            outline = (name + blanks.substring(0, 10 - name.length())) +
+                    (job + blanks.substring(0, 10 - job.length())) +
+                    (salary_text + blanks.substring(0, 12 - salary_text.length()));
+            System.out.println(outline);
 
-            ResultSet rs = pstmt.executeQuery();
-            boolean more = rs.next();
-            while (more) {
-                name = rs.getString(1);
-                job = rs.getString(2);
-                salary = rs.getFloat(3);
-                String salary_text = "%.2f".formatted(salary);
-                String outline = (name + blanks.substring(0, 10 - name.length())) +
-                        (job + blanks.substring(0, 10 - job.length())) +
-                        (salary_text + blanks.substring(0, 12 - salary_text.length()));
-                System.out.println(outline);
+            rs.last();
+            name = rs.getString(1);
+            job = rs.getString(2);
+            salary = rs.getFloat(3);
+            salary_text = "%.2f".formatted(salary);
+            outline = (name + blanks.substring(0, 10 - name.length())) +
+                    (job + blanks.substring(0, 10 - job.length())) +
+                    (salary_text + blanks.substring(0, 12 - salary_text.length()));
+            System.out.println(outline);
 
-                /* ( 5 ) Move to the next row of the resultset                  */
+            rs.previous();
+            name = rs.getString(1);
+            job = rs.getString(2);
+            salary = rs.getFloat(3);
+            salary_text = "%.2f".formatted(salary);
+            outline = (name + blanks.substring(0, 10 - name.length())) +
+                    (job + blanks.substring(0, 10 - job.length())) +
+                    (salary_text + blanks.substring(0, 12 - salary_text.length()));
+            System.out.println(outline);
 
-                more = rs.next();
-            }
+            rs.first();
+            name = rs.getString(1);
+            job = rs.getString(2);
+            salary = rs.getFloat(3);
+            salary_text = "%.2f".formatted(salary);
+            outline = (name + blanks.substring(0, 10 - name.length())) +
+                    (job + blanks.substring(0, 10 - job.length())) +
+                    (salary_text + blanks.substring(0, 12 - salary_text.length()));
+            System.out.println(outline);
+
 
         }  // end try
         catch (SQLException x) {
