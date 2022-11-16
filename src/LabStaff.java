@@ -45,7 +45,7 @@ public class LabStaff {
         short id = 0;
         double salary = 0;
         String job;
-        String sqlstmt = "select id, name,salary from staff where Dept = ?";
+        String sqlstmt = "select name, job, salary from staff where STAFF.DEPT = 10";
         String s;
         int mydeptno;
         int SQLCode;
@@ -67,27 +67,8 @@ public class LabStaff {
         System.out.println("Connect completed");
 
 
-        /* ( 4 ) Turn autocommit to off                                     */
-
-
-        sample.setAutoCommit(false);
-
-
-        /*   Print instruction lines                       */
-        System.out.println("This program will update the salaries for a department");
-        System.out.println("\n");
-        System.out.println("Please enter a department number: \n ");
-
-        /*  Get the department number from the input data */
-
-
-        s = in.readLine();
-        deptno = s.substring(0, 2);
-        mydeptno = Integer.parseInt(deptno);
-
-
-        /*  Issue Select statement  */
-        System.out.println("Statement stmt follows");
+        System.out.println("\n NAME     JOB       SALARY\n");
+        System.out.println("--------  --------  --------------\n");
         try {
 
 
@@ -96,29 +77,21 @@ public class LabStaff {
 
 
             PreparedStatement pstmt = sample.prepareStatement(sqlstmt);
-
-
-
-            /* (6) Set the parameter marker to be value of the department.         */
-            /*     This value is placed in the field deptno                        */
-
-
-            pstmt.setInt(1, mydeptno);
-
-
             /* (7) Execute the SQL statement                                       */
             /*     The number of rows modified by the update statment should be    */
             /*     saved in the variable named updateCount                         */
 
             ResultSet rs = pstmt.executeQuery();
             boolean more = rs.next();
-            String salary_text;
             while (more) {
                 name = rs.getString(1);
                 job = rs.getString(2);
-                salary_text = rs.getString(3);
-                String outline = (name + blanks.substring(0, 10 - name.length())) + (job + blanks.substring(0, 10 - job.length())) + (salary + blanks.substring(0, 12 - salary_text.length()));
-                System.out.println("\n" + outline);
+                salary = rs.getFloat(3);
+                String salary_text = "%.2f".formatted(salary);
+                String outline = (name + blanks.substring(0, 10 - name.length())) +
+                        (job + blanks.substring(0, 10 - job.length())) +
+                        (salary_text + blanks.substring(0, 12 - salary_text.length()));
+                System.out.println(outline);
 
                 /* ( 5 ) Move to the next row of the resultset                  */
 
