@@ -20,7 +20,7 @@ public class LabStaff {
 
             /* ( 2 ) Load the DB2 Driver                             */
 
-            Class.forName("COM.ibm.db2.jdbc.app.DB2Driver");
+            Class.forName("com.ibm.db2.jcc.DB2Driver");
         } catch (Exception e) {
             System.out.println("\n  Error loading DB2 Driver...\n");
             e.printStackTrace();
@@ -44,11 +44,11 @@ public class LabStaff {
         String deptno;
         short id = 0;
         double salary = 0;
-        String job ;
+        String job;
         String sqlstmt = "select id, name,salary from staff where Dept = ?";
-        String s ;
+        String s;
         int mydeptno;
-        int SQLCode ;
+        int SQLCode;
         String blanks = "                                                        ";
         String SQLState;
 
@@ -63,7 +63,7 @@ public class LabStaff {
         /*       Define the connection object named sample.                 */
         /*       Use the userid udba and the password udba                  */
 
-        Connection sample = DriverManager.getConnection("jdbc:db2:sample", "student", "student");
+        Connection sample = DriverManager.getConnection("jdbc:db2://192.168.245.128:50000/sample", "student", "student");
         System.out.println("Connect completed");
 
 
