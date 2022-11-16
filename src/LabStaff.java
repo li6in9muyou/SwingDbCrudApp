@@ -3,7 +3,11 @@
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Arrays;
 
 
 
@@ -65,39 +69,20 @@ public class LabStaff {
 
         Connection sample = DriverManager.getConnection("jdbc:db2://192.168.245.128:50000/sample", "student", "student");
         System.out.println("Connect completed");
+        sample.setAutoCommit(false);
 
 
-        System.out.println("\n NAME     JOB       SALARY\n");
-        System.out.println("--------  --------  --------------\n");
         try {
-
-
-            /* ( 5 ) Create the PreparedStatment object name pstmt using the       */
-            /* prepareStatement method                                             */
-
-
-            PreparedStatement pstmt = sample.prepareStatement(sqlstmt);
-            /* (7) Execute the SQL statement                                       */
-            /*     The number of rows modified by the update statment should be    */
-            /*     saved in the variable named updateCount                         */
-
-            ResultSet rs = pstmt.executeQuery();
-            boolean more = rs.next();
-            while (more) {
-                name = rs.getString(1);
-                job = rs.getString(2);
-                salary = rs.getFloat(3);
-                String salary_text = "%.2f".formatted(salary);
-                String outline = (name + blanks.substring(0, 10 - name.length())) +
-                        (job + blanks.substring(0, 10 - job.length())) +
-                        (salary_text + blanks.substring(0, 12 - salary_text.length()));
-                System.out.println(outline);
-
-                /* ( 5 ) Move to the next row of the resultset                  */
-
-                more = rs.next();
-            }
-
+            Statement stmt = sample.createStatement();
+            System.out.println("\n Batch Statements begin ");
+            stmt.addBatch("INSERT INTO DEPARTMENT VALUES ('BT6','BATCH7 NEWYORK','200340','E21','NEW YORK CITY6')");
+            stmt.addBatch("INSERT INTO DEPARTMENT VALUES ('BT7','BATCH7 NEWYORK','200340','E21','NEW YORK CITY7')");
+            stmt.addBatch("INSERT INTO DEPARTMENT VALUES ('BT8','BATCH7 NEWYORK','200340','E21','NEW YORK CITY8')");
+            stmt.addBatch("INSERT INTO DEPARTMENT VALUES ('BT9','BATCH7 NEWYORK','200340','E21','NEW YORK CITY9')");
+            stmt.addBatch("INSERT INTO DEPARTMENT VALUES ('BTA','BATCH7 NEWYORK','200340','E21','NEW YORK CITY10')");
+            int[] updateCounts = stmt.executeBatch();
+            System.out.println("updateCounts = " + Arrays.toString(updateCounts));
+            sample.commit();
         }  // end try
         catch (SQLException x) {
 
