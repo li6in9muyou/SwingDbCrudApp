@@ -187,7 +187,9 @@
             <children>
               <component id="f68d9" class="javax.swing.JTable" binding="QueryResultTable">
                 <constraints/>
-                <properties/>
+                <properties>
+                  <autoResizeMode value="0"/>
+                </properties>
               </component>
             </children>
           </scrollpane>

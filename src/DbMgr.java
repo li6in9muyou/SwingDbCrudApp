@@ -31,6 +31,7 @@ public class DbMgr {
                 fetch.FetchAllRows(), fetch.getColumnHeaders()
         );
         QueryResultTable.setModel(dbTable);
+        enableBetterColumnWidthAdjustment();
         CancelOperationButton.addActionListener(e -> {
             SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose();
         });
@@ -57,6 +58,13 @@ public class DbMgr {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+    }
+
+    private void enableBetterColumnWidthAdjustment() {
+        TableColumnAdjuster adjuster = new TableColumnAdjuster(QueryResultTable);
+        adjuster.setOnlyAdjustLarger(true);
+        adjuster.setColumnDataIncluded(true);
+        adjuster.adjustColumns();
     }
 
     private void HandleSingleInsert(ActionEvent actionEvent) {
