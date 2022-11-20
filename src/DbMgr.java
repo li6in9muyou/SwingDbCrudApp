@@ -3,7 +3,7 @@ import java.awt.event.ActionEvent;
 import java.util.Arrays;
 
 public class DbMgr {
-    private final DatabaseTableDataModel dbTable;
+    private final Fetch fetch;
     JPanel Show;
     private JTable QueryResultTable;
     private JButton InsertRowButton;
@@ -26,7 +26,8 @@ public class DbMgr {
     private boolean shouldAutoCommit;
 
     public DbMgr() {
-        dbTable = new DatabaseTableDataModel("employee");
+        fetch = new Fetch("employee");
+        DatabaseTableDataModel dbTable = new DatabaseTableDataModel(fetch.FetchAllRows());
         QueryResultTable.setModel(dbTable);
         CancelOperationButton.addActionListener(e -> {
             SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose();
@@ -56,14 +57,14 @@ public class DbMgr {
     private void HandleSingleInsert(ActionEvent actionEvent) {
         String text = singleLineInsert.getText();
         String[] fields = text.split(",");
-        dbTable.createRows(new String[][]{fields});
+        fetch.createRows(new String[][]{fields});
     }
 
     private void HandleManyLineInsert(ActionEvent actionEvent) {
         String text = multiLineInsert.getText();
         String[] lines = text.split("[\r\n]");
         String[][] rows = Arrays.stream(lines).map(line -> line.split(",")).toArray(String[][]::new);
-        dbTable.createRows(rows);
+        fetch.createRows(rows);
     }
 
     private void HandleSubQueryInsert(ActionEvent actionEvent) {

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 public class DatabaseTableDataModel extends AbstractTableModel {
     ArrayList<String[]> data;
 
-    public DatabaseTableDataModel(String table_name) {
-        data = Fetch.FetchAllRows(table_name);
+    public DatabaseTableDataModel(ArrayList<String[]> data) {
+        this.data = data;
     }
 
     @Override

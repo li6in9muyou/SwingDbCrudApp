@@ -10,15 +10,25 @@ public class Fetch {
         }
     }
 
-    static ArrayList<String[]> FetchAllRows(String table_name) {
+    private final String tableName;
+    private final Connection db;
+
+    public Fetch(String tableName) {
+        this.tableName = tableName;
         try {
-            Connection db = DriverManager.getConnection(
+            db = DriverManager.getConnection(
                     "jdbc:db2://192.168.245.128:50000/sample",
                     "student",
                     "student"
             );
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-            PreparedStatement query = db.prepareStatement("select * from " + table_name);
+    public ArrayList<String[]> FetchAllRows() {
+        try {
+            PreparedStatement query = db.prepareStatement("select * from " + tableName);
             ResultSet rs = query.executeQuery();
             ArrayList<String[]> rows = new ArrayList<>(rs.getFetchSize());
             int column_count = rs.getMetaData().getColumnCount();
