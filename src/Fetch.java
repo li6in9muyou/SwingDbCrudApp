@@ -1,5 +1,6 @@
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Vector;
 
 public class Fetch {
     static {
@@ -25,6 +26,27 @@ public class Fetch {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public String[] getColumnHeaders() {
+        Vector<String> columnsNames = new Vector<>();
+        try {
+            ResultSet columnMetaDate = db.getMetaData().getColumns(
+                    null,
+                    null,
+                    tableName.toUpperCase(),
+                    null
+            );
+            while (columnMetaDate.next()) {
+                columnsNames.add("%s (%s)".formatted(
+                        columnMetaDate.getString("COLUMN_NAME"),
+                        columnMetaDate.getString("TYPE_NAME")
+                ));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return columnsNames.toArray(String[]::new);
     }
 
     public ArrayList<String[]> FetchAllRows() {
