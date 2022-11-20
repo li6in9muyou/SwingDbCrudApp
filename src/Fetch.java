@@ -45,4 +45,8 @@ public class Fetch {
             throw new RuntimeException(e);
         }
     }
+
+    public void createRows(String[][] rows) {
+
+    }
 }

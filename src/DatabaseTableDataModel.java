@@ -22,7 +22,4 @@ public class DatabaseTableDataModel extends AbstractTableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         return data.get(rowIndex)[columnIndex];
     }
-
-    public void createRows(String[][] rows) {
-    }
 }
