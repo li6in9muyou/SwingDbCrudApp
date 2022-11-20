@@ -21,6 +21,7 @@ public class Fetch {
                     "student",
                     "student"
             );
+            db.setAutoCommit(false);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -47,6 +48,22 @@ public class Fetch {
     }
 
     public void createRows(String[][] rows) {
-
+        if (rows.length == 0) {
+            return;
+        }
+        int columnCount = rows[0].length;
+        String questionMarks = "?" + ",?".repeat(columnCount - 1);
+        String sql = "insert into %s values ( %s )".formatted(tableName, questionMarks);
+        try {
+            PreparedStatement insertQuery = db.prepareStatement(sql);
+            for (String[] row : rows) {
+                for (int i = 0; i < row.length; i++) {
+                    insertQuery.setString(i + 1, row[i]);
+                }
+                insertQuery.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
