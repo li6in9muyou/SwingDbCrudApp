@@ -15,6 +15,12 @@ public class DbMgr {
     private JCheckBox ToggleAutoCommitCheckBox;
     private JLabel RowCountLabel;
     private JComboBox<String> SelectedTable;
+    private JTextArea singleLineInsert;
+    private JTextArea multiLineInsert;
+    private JTextArea subQueryInsert;
+    private JButton doSingleInsert;
+    private JButton doManyLineInsert;
+    private JButton doSubQueryInsert;
     private boolean shouldAutoCommit;
 
     public DbMgr() {
