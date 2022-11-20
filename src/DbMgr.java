@@ -1,7 +1,9 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.util.Arrays;
 
 public class DbMgr {
+    private final DatabaseTableDataModel dbTable;
     JPanel Show;
     private JTable QueryResultTable;
     private JButton InsertRowButton;
@@ -24,11 +26,14 @@ public class DbMgr {
     private boolean shouldAutoCommit;
 
     public DbMgr() {
-        QueryResultTable.setModel(new DatabaseTableDataModel("employee"));
-        InsertRowButton.addActionListener(DbMgr::HandleInsertRow);
+        dbTable = new DatabaseTableDataModel("employee");
+        QueryResultTable.setModel(dbTable);
         CancelOperationButton.addActionListener(e -> {
             SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose();
         });
+        doSingleInsert.addActionListener(this::HandleSingleInsert);
+        doManyLineInsert.addActionListener(this::HandleManyLineInsert);
+        doSubQueryInsert.addActionListener(this::HandleSubQueryInsert);
     }
 
     public static void main(String[] args) {
@@ -48,31 +53,19 @@ public class DbMgr {
         frame.setVisible(true);
     }
 
-    private static void HandleInsertRow(ActionEvent e) {
-        JTextField firstName = new JTextField();
-        JTextField lastName = new JTextField();
-        JPasswordField password = new JPasswordField();
-        final JComponent[] inputs = new JComponent[]{
-                new JLabel("First"),
-                firstName,
-                new JLabel("Last"),
-                lastName,
-                new JLabel("Password"),
-                password
-        };
-        int result = JOptionPane.showConfirmDialog(
-                null,
-                inputs,
-                "添加一行",
-                JOptionPane.DEFAULT_OPTION
-        );
-        if (result == JOptionPane.OK_OPTION) {
-            System.out.println("You entered " +
-                    firstName.getText() + ", " +
-                    lastName.getText() + ", " +
-                    password.getText());
-        } else {
-            System.out.println("User canceled / closed the dialog, result = " + result);
-        }
+    private void HandleSingleInsert(ActionEvent actionEvent) {
+        String text = singleLineInsert.getText();
+        String[] fields = text.split(",");
+        dbTable.createRows(new String[][]{fields});
+    }
+
+    private void HandleManyLineInsert(ActionEvent actionEvent) {
+        String text = multiLineInsert.getText();
+        String[] lines = text.split("[\r\n]");
+        String[][] rows = Arrays.stream(lines).map(line -> line.split(",")).toArray(String[][]::new);
+        dbTable.createRows(rows);
+    }
+
+    private void HandleSubQueryInsert(ActionEvent actionEvent) {
     }
 }
