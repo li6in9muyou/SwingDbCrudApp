@@ -1,91 +1,54 @@
-import java.sql.*;
+import org.sql2o.Connection;
+import org.sql2o.Sql2o;
+import org.sql2o.data.Row;
+import org.sql2o.data.Table;
+
 import java.util.ArrayList;
-import java.util.Vector;
+import java.util.List;
 
 public class Fetch {
+    private static final Sql2o db;
+
     static {
         try {
             Class.forName("com.ibm.db2.jcc.DB2Driver");
+            db = new Sql2o(
+                    "jdbc:db2://192.168.245.128:50000/sample",
+                    "student",
+                    "student"
+            );
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
 
     private final String tableName;
-    private final Connection db;
 
     public Fetch(String tableName) {
         this.tableName = tableName;
-        try {
-            db = DriverManager.getConnection(
-                    "jdbc:db2://192.168.245.128:50000/sample",
-                    "student",
-                    "student"
-            );
-            db.setAutoCommit(false);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public String[] getColumnHeaders() {
-        Vector<String> columnsNames = new Vector<>();
-        try {
-            ResultSet columnMetaDate = db.getMetaData().getColumns(
-                    null,
-                    null,
-                    tableName.toUpperCase(),
-                    null
-            );
-            while (columnMetaDate.next()) {
-                columnsNames.add("%s (%s)".formatted(
-                        columnMetaDate.getString("COLUMN_NAME"),
-                        columnMetaDate.getString("TYPE_NAME")
-                ));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return columnsNames.toArray(String[]::new);
     }
 
     public ArrayList<String[]> FetchAllRows() {
-        try {
-            PreparedStatement query = db.prepareStatement("select * from " + tableName);
-            ResultSet rs = query.executeQuery();
-            ArrayList<String[]> rows = new ArrayList<>(rs.getFetchSize());
-            int column_count = rs.getMetaData().getColumnCount();
-            for (; rs.next(); rs.next()) {
-                String[] row = new String[column_count];
-                for (int i = 1; i <= column_count; i++) {
-                    Object obj = rs.getObject(i);
-                    row[i - 1] = (obj == null) ? "<null>" : obj.toString();
+        try (Connection con = db.open()) {
+            Table table = con
+                    .createQuery("select * from " + tableName)
+                    .executeAndFetchTable();
+            List<Row> rows = table.rows();
+            int colCnt = table.columns().size();
+
+            ArrayList<String[]> ans = new ArrayList<>(rows.size());
+            for (Row row : rows) {
+                String[] rowText = new String[colCnt];
+                for (int i = 0; i < colCnt; i++) {
+                    rowText[i] = row.getString(i);
                 }
-                rows.add(row);
+                ans.add(rowText);
             }
-            return rows;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            return ans;
         }
     }
 
     public void createRows(String[][] rows) {
-        if (rows.length == 0) {
-            return;
-        }
-        int columnCount = rows[0].length;
-        String questionMarks = "?" + ",?".repeat(columnCount - 1);
-        String sql = "insert into %s values ( %s )".formatted(tableName, questionMarks);
-        try {
-            PreparedStatement insertQuery = db.prepareStatement(sql);
-            for (String[] row : rows) {
-                for (int i = 0; i < row.length; i++) {
-                    insertQuery.setString(i + 1, row[i]);
-                }
-                insertQuery.executeUpdate();
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+
     }
 }
