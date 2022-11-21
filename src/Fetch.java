@@ -21,6 +21,7 @@ public class Fetch {
 
     private final String tableName;
     private Table table;
+    private boolean memIsStale;
 
     public Fetch(String tableName) {
         this.tableName = tableName;
@@ -28,11 +29,12 @@ public class Fetch {
     }
 
     private Table getTable() {
-        if (table == null) {
+        if (table == null || memIsStale) {
             try (Connection con = db.open()) {
                 table = con
                         .createQuery("select * from %s".formatted(tableName))
                         .executeAndFetchTable();
+                memIsStale = false;
                 return table;
             }
         } else {
@@ -86,6 +88,7 @@ public class Fetch {
                         Double.parseDouble(row[13])
                 ).executeUpdate();
                 con.commit();
+                memIsStale = true;
             }
         }
     }

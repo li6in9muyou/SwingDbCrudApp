@@ -37,6 +37,9 @@ public class DbMgr {
         doSingleInsert.addActionListener(this::HandleSingleInsert);
         doManyLineInsert.addActionListener(this::HandleManyLineInsert);
         doSubQueryInsert.addActionListener(this::HandleSubQueryInsert);
+        LoadMoreIntoMemoryButton.addActionListener(e -> QueryResultTable.setModel(
+                new DatabaseTableDataModel(fetch.FetchAllRows(), fetch.getColumnHeaders())
+        ));
     }
 
     public static void main(String[] args) {
