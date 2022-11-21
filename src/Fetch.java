@@ -62,4 +62,8 @@ public class Fetch {
     public void createRows(String[][] rows) {
 
     }
+
+    public String[] getColumnHeaders() {
+        return table.columns().stream().map(Column::toString).toArray(String[]::new);
+    }
 }
