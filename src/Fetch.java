@@ -1,5 +1,6 @@
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
+import org.sql2o.data.Column;
 import org.sql2o.data.Row;
 import org.sql2o.data.Table;
 
@@ -23,29 +24,39 @@ public class Fetch {
     }
 
     private final String tableName;
+    private Table table;
 
     public Fetch(String tableName) {
         this.tableName = tableName;
+
+    }
+
+    private Table getTable() {
+        if (table == null) {
+            try (Connection con = db.open()) {
+                table = con
+                        .createQuery("select * from %s".formatted(tableName))
+                        .executeAndFetchTable();
+                return table;
+            }
+        } else {
+            return table;
+        }
     }
 
     public ArrayList<String[]> FetchAllRows() {
-        try (Connection con = db.open()) {
-            Table table = con
-                    .createQuery("select * from " + tableName)
-                    .executeAndFetchTable();
-            List<Row> rows = table.rows();
-            int colCnt = table.columns().size();
+        List<Row> rows = getTable().rows();
+        int colCnt = getTable().columns().size();
 
-            ArrayList<String[]> ans = new ArrayList<>(rows.size());
-            for (Row row : rows) {
-                String[] rowText = new String[colCnt];
-                for (int i = 0; i < colCnt; i++) {
-                    rowText[i] = row.getString(i);
-                }
-                ans.add(rowText);
+        ArrayList<String[]> ans = new ArrayList<>(rows.size());
+        for (Row row : rows) {
+            String[] rowText = new String[colCnt];
+            for (int i = 0; i < colCnt; i++) {
+                rowText[i] = row.getString(i);
             }
-            return ans;
+            ans.add(rowText);
         }
+        return ans;
     }
 
     public void createRows(String[][] rows) {
