@@ -6,7 +6,7 @@ public class DbMgr {
     private final Fetch fetch;
     JPanel Show;
     private JTable QueryResultTable;
-    private JButton InsertRowButton;
+    private JButton StageSelectedRowsButton;
     private JButton DeleteRowButton;
     private JButton HelpButton;
     private JButton CancelOperationButton;
