@@ -2,6 +2,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
+import java.util.Vector;
 
 public class DbMgr {
     private final Fetch fetch;
@@ -37,6 +38,7 @@ public class DbMgr {
         LoadMoreIntoMemoryButton.addActionListener(e -> QueryResultTable.setModel(
                 new DefaultTableModel(fetch.fetchAllRows().toArray(String[][]::new), fetch.getColumnHeaders())
         ));
+        StageSelectedRowsButton.addActionListener(this::handleStageSelectedRows);
     }
 
     public static void main(String[] args) {
@@ -54,6 +56,30 @@ public class DbMgr {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+    }
+
+    private void handleStageSelectedRows(ActionEvent actionEvent) {
+        int[] selectedRows = QueryResultTable.getSelectedRows();
+        System.out.println("SelectedRows = " + Arrays.toString(selectedRows));
+
+        int columnCount = QueryResultTable.getColumnCount();
+        String[] result = new String[columnCount];
+        if (selectedRows.length == 1) {
+            int row = selectedRows[0];
+            for (int i = 0; i < columnCount; i++) {
+                result[i] = (String) QueryResultTable.getModel().getValueAt(row, i);
+            }
+            singleLineInsert.setText(String.join(",", result));
+        } else {
+            Vector<String> rows = new Vector<>();
+            for (int row : selectedRows) {
+                for (int i = 0; i < columnCount; i++) {
+                    result[i] = (String) QueryResultTable.getModel().getValueAt(row, i);
+                }
+                rows.add(String.join(",", result));
+            }
+            multiLineInsert.setText(String.join("\n", rows));
+        }
     }
 
     private void enableBetterColumnWidthAdjustment() {
