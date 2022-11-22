@@ -30,14 +30,12 @@ public class DbMgr {
     public DbMgr() {
         fetch = new Fetch("employee");
         enableBetterColumnWidthAdjustment();
-        CancelOperationButton.addActionListener(e -> {
-            SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose();
-        });
+        CancelOperationButton.addActionListener(e -> SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose());
         doSingleInsert.addActionListener(this::handleSingleInsert);
         doManyLineInsert.addActionListener(this::handleManyLineInsert);
         doSubQueryInsert.addActionListener(this::handleSubQueryInsert);
         LoadMoreIntoMemoryButton.addActionListener(e -> QueryResultTable.setModel(
-                new DefaultTableModel(fetch.FetchAllRows().toArray(String[][]::new), fetch.getColumnHeaders())
+                new DefaultTableModel(fetch.fetchAllRows().toArray(String[][]::new), fetch.getColumnHeaders())
         ));
     }
 

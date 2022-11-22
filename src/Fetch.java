@@ -49,7 +49,7 @@ public class Fetch {
         }
     }
 
-    public ArrayList<String[]> FetchAllRows() {
+    public ArrayList<String[]> fetchAllRows() {
         List<Row> rows = getTable().rows();
         int colCnt = getTable().columns().size();
 
