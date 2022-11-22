@@ -64,6 +64,24 @@ public class Fetch {
         return ans;
     }
 
+    public String[][] fetchPredicate(String predicate) {
+        try (Connection con = db.open()) {
+            List<Row> rows = con
+                    .createQuery("select * from %s where %s;".formatted(tableName, predicate))
+                    .executeAndFetchTable().rows();
+            int colCnt = getTable().columns().size();
+            ArrayList<String[]> ans = new ArrayList<>(rows.size());
+            for (Row row : rows) {
+                String[] rowText = new String[colCnt];
+                for (int i = 0; i < colCnt; i++) {
+                    rowText[i] = row.getString(i);
+                }
+                ans.add(rowText);
+            }
+            return ans.toArray(String[][]::new);
+        }
+    }
+
     private String defaultParams(int count) {
         StringBuilder sb = new StringBuilder();
         sb.append(":p1");

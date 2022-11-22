@@ -3,6 +3,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 public class DbMgr {
     private final Fetch fetch;
@@ -26,7 +27,7 @@ public class DbMgr {
     private JButton doManyLineInsert;
     private JButton doSubQueryInsert;
     private JTextPane notifications;
-    private JTextField textField1;
+    private JTextField subQueryPredicate;
     private JButton fetchPreview;
     private boolean shouldAutoCommit;
 
@@ -41,6 +42,7 @@ public class DbMgr {
                 new DefaultTableModel(fetch.fetchAllRows().toArray(String[][]::new), fetch.getColumnHeaders())
         ));
         StageSelectedRowsButton.addActionListener(this::handleStageSelectedRows);
+        fetchPreview.addActionListener(this::handleFetchSubQueryPreview);
     }
 
     public static void main(String[] args) {
@@ -58,6 +60,15 @@ public class DbMgr {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+    }
+
+    private void handleFetchSubQueryPreview(ActionEvent actionEvent) {
+        String[][] rows = fetch.fetchPredicate(subQueryPredicate.getText());
+        subQueryInsert.setText(
+                Arrays.stream(rows)
+                        .map(row -> String.join(",", row))
+                        .collect(Collectors.joining("\n"))
+        );
     }
 
     private void handleStageSelectedRows(ActionEvent actionEvent) {
