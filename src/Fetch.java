@@ -66,30 +66,35 @@ public class Fetch {
         return sb.toString();
     }
 
-    public void createRows(String[][] rows) {
-        try (Connection con = db.beginTransaction()) {
-            con.setRollbackOnException(true);
-            for (String[] row : rows) {
-                con.createQueryWithParams(
-                        "insert into %s values ( %s )".formatted(tableName, defaultParams(getTable().columns().size())),
-                        row[0],
-                        row[1],
-                        row[2],
-                        row[3],
-                        row[4],
-                        row[5],
-                        row[6],
-                        row[7],
-                        Integer.parseInt(row[8]),
-                        row[9],
-                        row[10],
-                        Double.parseDouble(row[11]),
-                        Double.parseDouble(row[12]),
-                        Double.parseDouble(row[13])
-                ).executeUpdate();
-                con.commit();
-                memIsStale = true;
+    public Throwable createRows(String[][] rows) {
+        try {
+            try (Connection con = db.beginTransaction()) {
+                con.setRollbackOnException(true);
+                for (String[] row : rows) {
+                    con.createQueryWithParams(
+                            "insert into %s values ( %s )".formatted(tableName, defaultParams(getTable().columns().size())),
+                            row[0],
+                            row[1],
+                            row[2],
+                            row[3],
+                            row[4],
+                            row[5],
+                            row[6],
+                            row[7],
+                            Integer.parseInt(row[8]),
+                            row[9],
+                            row[10],
+                            Double.parseDouble(row[11]),
+                            Double.parseDouble(row[12]),
+                            Double.parseDouble(row[13])
+                    ).executeUpdate();
+                    con.commit();
+                    memIsStale = true;
+                }
             }
+            return null;
+        } catch (Exception exception) {
+            return exception;
         }
     }
 

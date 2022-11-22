@@ -67,17 +67,28 @@ public class DbMgr {
         adjuster.adjustColumns();
     }
 
+    private void handleError(Throwable error) {
+        if (error != null) {
+            System.out.println("operation failed");
+            System.out.println("error.getMessage() = " + error.getMessage());
+        } else {
+            System.out.println("operation is successful");
+        }
+    }
+
     private void HandleSingleInsert(ActionEvent actionEvent) {
         String text = singleLineInsert.getText();
         String[] fields = text.split(",");
-        fetch.createRows(new String[][]{fields});
+        Throwable error = fetch.createRows(new String[][]{fields});
+        handleError(error);
     }
 
     private void HandleManyLineInsert(ActionEvent actionEvent) {
         String text = multiLineInsert.getText();
         String[] lines = text.split("[\r\n]");
         String[][] rows = Arrays.stream(lines).map(line -> line.split(",")).toArray(String[][]::new);
-        fetch.createRows(rows);
+        Throwable error = fetch.createRows(rows);
+        handleError(error);
     }
 
     private void HandleSubQueryInsert(ActionEvent actionEvent) {
