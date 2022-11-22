@@ -23,6 +23,7 @@ public class DbMgr {
     private JButton doSingleInsert;
     private JButton doManyLineInsert;
     private JButton doSubQueryInsert;
+    private JTextPane notifications;
     private boolean shouldAutoCommit;
 
     public DbMgr() {
@@ -93,5 +94,13 @@ public class DbMgr {
     }
 
     private void handleSubQueryInsert(ActionEvent actionEvent) {
+    }
+
+    private void postNotification(String message) {
+        String text = notifications.getText();
+        if (!text.isEmpty()) {
+            text += "\n";
+        }
+        notifications.setText(text + message);
     }
 }
