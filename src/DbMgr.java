@@ -35,9 +35,9 @@ public class DbMgr {
         CancelOperationButton.addActionListener(e -> {
             SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose();
         });
-        doSingleInsert.addActionListener(this::HandleSingleInsert);
-        doManyLineInsert.addActionListener(this::HandleManyLineInsert);
-        doSubQueryInsert.addActionListener(this::HandleSubQueryInsert);
+        doSingleInsert.addActionListener(this::handleSingleInsert);
+        doManyLineInsert.addActionListener(this::handleManyLineInsert);
+        doSubQueryInsert.addActionListener(this::handleSubQueryInsert);
         LoadMoreIntoMemoryButton.addActionListener(e -> QueryResultTable.setModel(
                 new DatabaseTableDataModel(fetch.FetchAllRows(), fetch.getColumnHeaders())
         ));
@@ -76,14 +76,14 @@ public class DbMgr {
         }
     }
 
-    private void HandleSingleInsert(ActionEvent actionEvent) {
+    private void handleSingleInsert(ActionEvent actionEvent) {
         String text = singleLineInsert.getText();
         String[] fields = text.split(",");
         Throwable error = fetch.createRows(new String[][]{fields});
         handleError(error);
     }
 
-    private void HandleManyLineInsert(ActionEvent actionEvent) {
+    private void handleManyLineInsert(ActionEvent actionEvent) {
         String text = multiLineInsert.getText();
         String[] lines = text.split("[\r\n]");
         String[][] rows = Arrays.stream(lines).map(line -> line.split(",")).toArray(String[][]::new);
@@ -91,6 +91,6 @@ public class DbMgr {
         handleError(error);
     }
 
-    private void HandleSubQueryInsert(ActionEvent actionEvent) {
+    private void handleSubQueryInsert(ActionEvent actionEvent) {
     }
 }
