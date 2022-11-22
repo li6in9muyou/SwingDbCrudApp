@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
 
@@ -36,7 +37,7 @@ public class DbMgr {
         doManyLineInsert.addActionListener(this::handleManyLineInsert);
         doSubQueryInsert.addActionListener(this::handleSubQueryInsert);
         LoadMoreIntoMemoryButton.addActionListener(e -> QueryResultTable.setModel(
-                new DatabaseTableDataModel(fetch.FetchAllRows(), fetch.getColumnHeaders())
+                new DefaultTableModel(fetch.FetchAllRows().toArray(String[][]::new), fetch.getColumnHeaders())
         ));
     }
 
