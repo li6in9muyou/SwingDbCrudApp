@@ -28,10 +28,6 @@ public class DbMgr {
 
     public DbMgr() {
         fetch = new Fetch("employee");
-        DatabaseTableDataModel dbTable = new DatabaseTableDataModel(
-                fetch.FetchAllRows(), fetch.getColumnHeaders()
-        );
-        QueryResultTable.setModel(dbTable);
         enableBetterColumnWidthAdjustment();
         CancelOperationButton.addActionListener(e -> {
             SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose();
