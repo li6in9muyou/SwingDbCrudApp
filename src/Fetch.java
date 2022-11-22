@@ -1,3 +1,5 @@
+import com.ibm.db2.jcc.DB2Diagnosable;
+import com.ibm.db2.jcc.DB2Sqlca;
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
 import org.sql2o.data.Column;
@@ -13,7 +15,12 @@ public class Fetch {
     static {
         try {
             Class.forName("com.ibm.db2.jcc.DB2Driver");
-            db = new Sql2o("jdbc:db2://192.168.245.128:50000/sample", "student", "student");
+            db = new Sql2o(
+                    "jdbc:db2://192.168.245.128:50000/sample:" +
+                            "retrieveMessagesFromServerOnGetMessage=true;",
+                    "student",
+                    "student"
+            );
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -95,6 +102,21 @@ public class Fetch {
             return null;
         } catch (Exception exception) {
             return exception;
+        }
+    }
+
+    public String fetchErrorMessage(Throwable error) {
+        Throwable unwrapped = error.getCause();
+        if (unwrapped instanceof DB2Diagnosable) {
+            DB2Sqlca sqlca = ((DB2Diagnosable) unwrapped).getSqlca();
+            try (Connection con = db.beginTransaction()) {
+                return con.createQueryWithParams(
+                        "values (sysproc.SQLERRM(:p1, :p2, ';', 'zh_CN', 1))",
+                        "SQL" + Math.abs(sqlca.getSqlCode()), sqlca.getSqlErrmc()
+                ).executeScalar(String.class);
+            }
+        } else {
+            return error.getMessage();
         }
     }
 

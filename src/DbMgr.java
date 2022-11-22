@@ -71,6 +71,7 @@ public class DbMgr {
         if (error != null) {
             System.out.println("operation failed");
             System.out.println("error.getMessage() = " + error.getMessage());
+            System.out.println("fetch.fetchErrorMessage(error) = " + fetch.fetchErrorMessage(error));
         } else {
             System.out.println("operation is successful");
         }
