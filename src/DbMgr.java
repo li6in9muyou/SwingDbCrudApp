@@ -26,6 +26,8 @@ public class DbMgr {
     private JButton doManyLineInsert;
     private JButton doSubQueryInsert;
     private JTextPane notifications;
+    private JTextField textField1;
+    private JButton fetchPreview;
     private boolean shouldAutoCommit;
 
     public DbMgr() {
