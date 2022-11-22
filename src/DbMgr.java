@@ -39,6 +39,15 @@ public class DbMgr {
                 new DefaultTableModel(fetch.fetchAllRows().toArray(String[][]::new), fetch.getColumnHeaders())
         ));
         StageSelectedRowsButton.addActionListener(this::handleStageSelectedRows);
+        multiLineInsert.setText("""
+                000141,HEATHER,A,NICHOLLS,C01,1793,2006-12-15,ANALYST,18,F,1976-01-19,68420.00,600.00,2274.00
+                000152,BRUCE,,ADAMSON,D11,4510,2002-02-12,DESIGNER,16,M,1977-05-17,55280.00,500.00,2022.00
+                000163,ELIZABETH,R,PIANKA,D11,3782,2006-10-11,DESIGNER,17,F,1980-04-12,62250.00,400.00,1780.00"""
+        );
+        singleLineInsert.setText("""
+                000141,HEATHER,A,NICHOLLS,C01,1793,2006-12-15,ANALYST,18,F,1976-01-19,68420.00,600.00,2274.00,000152,BRUCE,,ADAMSON,D11,4510,2002-02-12,DESIGNER,16,M,1977-05-17,55280.00,500.00,2022.00,000163,ELIZABETH,R,PIANKA,D11,3782,2006-10-11,DESIGNER,17,F,1980-04-12,62250.00,400.00,1780.00
+                """
+        );
     }
 
     public static void main(String[] args) {
