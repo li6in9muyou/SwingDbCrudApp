@@ -6,7 +6,8 @@ import java.util.Vector;
 import java.util.stream.Collectors;
 
 public class DbMgr {
-    private final Fetch fetch;
+    private final FetchDecorator fetch;
+    private final Blackboard blackboard;
     JPanel Show;
     private JTable QueryResultTable;
     private JButton StageSelectedRowsButton;
@@ -32,7 +33,8 @@ public class DbMgr {
     private boolean shouldAutoCommit;
 
     public DbMgr() {
-        fetch = new Fetch("employee");
+        blackboard = new Blackboard(notifications);
+        fetch = new FetchDecorator(blackboard, new Fetch("employee"));
         enableBetterColumnWidthAdjustment();
         CancelOperationButton.addActionListener(e -> SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose());
         doSingleInsert.addActionListener(this::handleSingleInsert);
@@ -77,7 +79,7 @@ public class DbMgr {
 
     private void handleStageSelectedRows(ActionEvent actionEvent) {
         int[] selectedRows = QueryResultTable.getSelectedRows();
-        postTrace("SelectedRows = " + Arrays.toString(selectedRows));
+        blackboard.postTrace("SelectedRows = " + Arrays.toString(selectedRows));
 
         int columnCount = QueryResultTable.getColumnCount();
         String[] result = new String[columnCount];
@@ -106,62 +108,21 @@ public class DbMgr {
         adjuster.adjustColumns();
     }
 
-    private void handleError(Throwable error) {
-        if (error != null) {
-            System.out.println("operation failed");
-            System.out.println("error.getMessage() = " + error.getMessage());
-            String errorMessage = fetch.fetchErrorMessage(error);
-            System.out.println("fetch.fetchErrorMessage(error) = " + errorMessage);
-            postError("operation failed");
-            postError(errorMessage);
-        } else {
-            postInfo("成功");
-            System.out.println("operation is successful");
-        }
-    }
-
     private void handleSingleInsert(ActionEvent actionEvent) {
         String text = singleLineInsert.getText();
         String[] fields = text.split(",");
-        upsertRows(new String[][]{fields});
+        fetch.createRows(new String[][]{fields});
+        LoadMoreIntoMemoryButton.doClick();
     }
 
     private void handleManyLineInsert(ActionEvent actionEvent) {
         String text = multiLineInsert.getText();
         String[] lines = text.split("[\r\n]");
         String[][] rows = Arrays.stream(lines).map(line -> line.split(",")).toArray(String[][]::new);
-        upsertRows(rows);
-    }
-
-    private void upsertRows(String[][] rows) {
-        postInfo("向数据库发送请求……");
-        Throwable error = fetch.createRows(rows);
-        handleError(error);
-        if (error == null) {
-            LoadMoreIntoMemoryButton.doClick();
-        }
+        fetch.createRows(rows);
+        LoadMoreIntoMemoryButton.doClick();
     }
 
     private void handleSubQueryInsert(ActionEvent actionEvent) {
-    }
-
-    private void postNotification(String message) {
-        String text = notifications.getText();
-        if (!text.isEmpty()) {
-            text += "\n";
-        }
-        notifications.setText(text + message);
-    }
-
-    private void postError(String errorMessage) {
-        postNotification("出错了：" + errorMessage);
-    }
-
-    private void postInfo(String message) {
-        postNotification("重要信息：" + message);
-    }
-
-    private void postTrace(String message) {
-        postNotification(message);
     }
 }

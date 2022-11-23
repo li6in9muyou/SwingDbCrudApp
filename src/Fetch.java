@@ -26,7 +26,7 @@ public class Fetch {
         }
     }
 
-    private final String tableName;
+    public final String tableName;
     private Table table;
     private boolean memIsStale;
 
