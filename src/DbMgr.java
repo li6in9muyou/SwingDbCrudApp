@@ -77,7 +77,7 @@ public class DbMgr {
 
     private void handleStageSelectedRows(ActionEvent actionEvent) {
         int[] selectedRows = QueryResultTable.getSelectedRows();
-        System.out.println("SelectedRows = " + Arrays.toString(selectedRows));
+        postTrace("SelectedRows = " + Arrays.toString(selectedRows));
 
         int columnCount = QueryResultTable.getColumnCount();
         String[] result = new String[columnCount];
@@ -159,5 +159,9 @@ public class DbMgr {
 
     private void postInfo(String message) {
         postNotification("重要信息：" + message);
+    }
+
+    private void postTrace(String message) {
+        postNotification(message);
     }
 }
