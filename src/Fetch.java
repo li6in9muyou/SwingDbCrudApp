@@ -39,7 +39,7 @@ public class Fetch {
         if (table == null || memIsStale) {
             try (Connection con = db.open()) {
                 table = con
-                        .createQuery("select * from %s".formatted(tableName))
+                        .createQuery("select * from %s order by 1".formatted(tableName))
                         .executeAndFetchTable();
                 memIsStale = false;
                 return table;
