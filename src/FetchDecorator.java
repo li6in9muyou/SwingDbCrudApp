@@ -1,3 +1,5 @@
+import org.sql2o.Sql2oException;
+
 import java.util.ArrayList;
 
 public class FetchDecorator {
@@ -11,16 +13,26 @@ public class FetchDecorator {
 
     public ArrayList<String[]> fetchAllRows() {
         blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.tableName));
-        ArrayList<String[]> rows = fetch.fetchAllRows();
-        blackboard.postInfo("查询到%d行".formatted(rows.size()));
-        return rows;
+        try {
+            ArrayList<String[]> rows = new ArrayList<>(fetch.fetchAllRows());
+            blackboard.postInfo("查询到%d行".formatted(rows.size()));
+            return rows;
+        } catch (Sql2oException exception) {
+            blackboard.postError("灾难性错误\n%s".formatted(exception.getMessage()));
+            return new ArrayList<>();
+        }
     }
 
     public String[][] fetchPredicate(String predicate) {
         blackboard.postInfo("使用谓词查询");
-        String[][] rows = fetch.fetchPredicate(predicate);
-        blackboard.postInfo("查询到%d行".formatted(rows.length));
-        return rows;
+        try {
+            String[][] rows = fetch.fetchPredicate(predicate);
+            blackboard.postInfo("查询到%d行".formatted(rows.length));
+            return rows;
+        } catch (Sql2oException exception) {
+            blackboard.postError("灾难性错误\n%s".formatted(exception.getMessage()));
+            return new String[][]{};
+        }
     }
 
     public void createRows(String[][] rows) {
