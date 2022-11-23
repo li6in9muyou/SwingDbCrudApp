@@ -18,7 +18,7 @@ public class FetchDecorator {
             blackboard.postInfo("查询到%d行".formatted(rows.size()));
             return rows;
         } catch (Sql2oException exception) {
-            blackboard.postError("灾难性错误\n%s".formatted(exception.getMessage()));
+            handleError(exception.getCause());
             return new ArrayList<>();
         }
     }
@@ -30,7 +30,7 @@ public class FetchDecorator {
             blackboard.postInfo("查询到%d行".formatted(rows.length));
             return rows;
         } catch (Sql2oException exception) {
-            blackboard.postError("灾难性错误\n%s".formatted(exception.getMessage()));
+            handleError(exception.getCause());
             return new String[][]{};
         }
     }
