@@ -38,9 +38,7 @@ public class DbMgr {
         doSingleInsert.addActionListener(this::handleSingleInsert);
         doManyLineInsert.addActionListener(this::handleManyLineInsert);
         doSubQueryInsert.addActionListener(this::handleSubQueryInsert);
-        LoadMoreIntoMemoryButton.addActionListener(e -> QueryResultTable.setModel(
-                new DefaultTableModel(fetch.fetchAllRows().toArray(String[][]::new), fetch.getColumnHeaders())
-        ));
+        LoadMoreIntoMemoryButton.addActionListener(this::handleFetchAllRows);
         StageSelectedRowsButton.addActionListener(this::handleStageSelectedRows);
         fetchPreview.addActionListener(this::handleFetchSubQueryPreview);
     }
@@ -60,6 +58,12 @@ public class DbMgr {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+    }
+
+    private void handleFetchAllRows(ActionEvent actionEvent) {
+        QueryResultTable.setModel(
+                new DefaultTableModel(fetch.fetchAllRows().toArray(String[][]::new), fetch.getColumnHeaders())
+        );
     }
 
     private void handleFetchSubQueryPreview(ActionEvent actionEvent) {
@@ -119,16 +123,23 @@ public class DbMgr {
     private void handleSingleInsert(ActionEvent actionEvent) {
         String text = singleLineInsert.getText();
         String[] fields = text.split(",");
-        Throwable error = fetch.createRows(new String[][]{fields});
-        handleError(error);
+        upsertRows(new String[][]{fields});
     }
 
     private void handleManyLineInsert(ActionEvent actionEvent) {
         String text = multiLineInsert.getText();
         String[] lines = text.split("[\r\n]");
         String[][] rows = Arrays.stream(lines).map(line -> line.split(",")).toArray(String[][]::new);
+        upsertRows(rows);
+    }
+
+    private void upsertRows(String[][] rows) {
+        postInfo("向数据库发送请求……");
         Throwable error = fetch.createRows(rows);
         handleError(error);
+        if (error == null) {
+            LoadMoreIntoMemoryButton.doClick();
+        }
     }
 
     private void handleSubQueryInsert(ActionEvent actionEvent) {
