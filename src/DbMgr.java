@@ -112,7 +112,6 @@ public class DbMgr {
         String text = singleLineInsert.getText();
         String[] fields = text.split(",");
         fetch.createRows(new String[][]{fields});
-        LoadMoreIntoMemoryButton.doClick();
     }
 
     private void handleManyLineInsert(ActionEvent actionEvent) {
@@ -120,7 +119,6 @@ public class DbMgr {
         String[] lines = text.split("[\r\n]");
         String[][] rows = Arrays.stream(lines).map(line -> line.split(",")).toArray(String[][]::new);
         fetch.createRows(rows);
-        LoadMoreIntoMemoryButton.doClick();
     }
 
     private void handleSubQueryInsert(ActionEvent actionEvent) {
