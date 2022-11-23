@@ -127,7 +127,7 @@ public class Fetch {
         Throwable unwrapped = error.getCause();
         if (unwrapped instanceof DB2Diagnosable) {
             DB2Sqlca sqlca = ((DB2Diagnosable) unwrapped).getSqlca();
-            try (Connection con = db.beginTransaction()) {
+            try (Connection con = db.open()) {
                 return con.createQueryWithParams(
                         "values (sysproc.SQLERRM(:p1, :p2, ';', 'zh_CN', 1))",
                         "SQL" + Math.abs(sqlca.getSqlCode()), sqlca.getSqlErrmc()
