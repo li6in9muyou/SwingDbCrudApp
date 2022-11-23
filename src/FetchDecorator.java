@@ -41,10 +41,6 @@ public class FetchDecorator {
         handleError(error);
     }
 
-    public String fetchErrorMessage(Throwable error) {
-        return fetch.fetchErrorMessage(error);
-    }
-
     public String[] getColumnHeaders() {
         return fetch.getColumnHeaders();
     }
@@ -53,7 +49,7 @@ public class FetchDecorator {
         if (error != null) {
             System.out.println("operation failed");
             System.out.println("error.getMessage() = " + error.getMessage());
-            String errorMessage = fetchErrorMessage(error);
+            String errorMessage = fetch.fetchErrorMessage(error);
             System.out.println("fetch.fetchErrorMessage(error) = " + errorMessage);
             blackboard.postError("失败");
             blackboard.postError(errorMessage);
