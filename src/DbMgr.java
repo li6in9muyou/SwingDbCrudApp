@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 public class DbMgr {
     private final FetchDecorator fetch;
     private final Blackboard blackboard;
+    private final TableColumnAdjuster adjuster;
     JPanel Show;
     private JTable QueryResultTable;
     private JButton StageSelectedRowsButton;
@@ -35,7 +36,7 @@ public class DbMgr {
     public DbMgr() {
         blackboard = new Blackboard(notifications);
         fetch = new FetchDecorator(blackboard, new Fetch("employee"));
-        enableBetterColumnWidthAdjustment();
+        adjuster = getColumnWidthAdjuster();
         CancelOperationButton.addActionListener(e -> SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose());
         doSingleInsert.addActionListener(this::handleSingleInsert);
         doManyLineInsert.addActionListener(this::handleManyLineInsert);
@@ -101,11 +102,11 @@ public class DbMgr {
         }
     }
 
-    private void enableBetterColumnWidthAdjustment() {
-        TableColumnAdjuster adjuster = new TableColumnAdjuster(QueryResultTable);
-        adjuster.setOnlyAdjustLarger(true);
-        adjuster.setColumnDataIncluded(true);
-        adjuster.adjustColumns();
+    private TableColumnAdjuster getColumnWidthAdjuster() {
+        TableColumnAdjuster adj = new TableColumnAdjuster(QueryResultTable);
+        adj.setOnlyAdjustLarger(true);
+        adj.setColumnDataIncluded(true);
+        return adj;
     }
 
     private void handleSingleInsert(ActionEvent actionEvent) {
