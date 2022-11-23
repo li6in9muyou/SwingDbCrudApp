@@ -106,8 +106,12 @@ public class DbMgr {
         if (error != null) {
             System.out.println("operation failed");
             System.out.println("error.getMessage() = " + error.getMessage());
-            System.out.println("fetch.fetchErrorMessage(error) = " + fetch.fetchErrorMessage(error));
+            String errorMessage = fetch.fetchErrorMessage(error);
+            System.out.println("fetch.fetchErrorMessage(error) = " + errorMessage);
+            postError("operation failed");
+            postError(errorMessage);
         } else {
+            postInfo("成功");
             System.out.println("operation is successful");
         }
     }
@@ -136,5 +140,13 @@ public class DbMgr {
             text += "\n";
         }
         notifications.setText(text + message);
+    }
+
+    private void postError(String errorMessage) {
+        postNotification("出错了：" + errorMessage);
+    }
+
+    private void postInfo(String message) {
+        postNotification("重要信息：" + message);
     }
 }
