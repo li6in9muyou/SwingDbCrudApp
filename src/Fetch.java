@@ -67,7 +67,7 @@ public class Fetch {
     public String[][] fetchPredicate(String predicate) {
         try (Connection con = db.open()) {
             List<Row> rows = con
-                    .createQuery("select * from %s where %s;".formatted(tableName, predicate))
+                    .createQuery("select * from %s where %s".formatted(tableName, predicate))
                     .executeAndFetchTable().rows();
             int colCnt = getTable().columns().size();
             ArrayList<String[]> ans = new ArrayList<>(rows.size());
