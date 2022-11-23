@@ -122,5 +122,9 @@ public class DbMgr {
     }
 
     private void handleSubQueryInsert(ActionEvent actionEvent) {
+        String text = subQueryInsert.getText();
+        String[] lines = text.split("[\r\n]");
+        String[][] rows = Arrays.stream(lines).map(line -> line.split(",")).toArray(String[][]::new);
+        fetch.createRows(rows);
     }
 }
