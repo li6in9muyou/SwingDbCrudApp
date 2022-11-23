@@ -67,6 +67,7 @@ public class DbMgr {
         QueryResultTable.setModel(
                 new DefaultTableModel(fetch.fetchAllRows().toArray(String[][]::new), fetch.getColumnHeaders())
         );
+        adjuster.adjustColumns();
     }
 
     private void handleFetchSubQueryPreview(ActionEvent actionEvent) {
