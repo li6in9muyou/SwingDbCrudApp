@@ -2,7 +2,7 @@ import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
-public class ExplicitTableCellRenderer implements TableCellRenderer {
+public class ExplicitTableCellRenderer extends DefaultListCellRenderer implements TableCellRenderer {
     private final TableCellRenderer defaultRenderer;
 
     public ExplicitTableCellRenderer(TableCellRenderer defaultRenderer) {
@@ -12,17 +12,16 @@ public class ExplicitTableCellRenderer implements TableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         if (value == null || value.equals("")) {
-            JLabel label = new JLabel();
             if (value == null) {
-                label.setText("空");
-                label.setBackground(Color.RED);
+                setText("空");
+                setBackground(Color.RED);
             } else {
-                label.setText("空字符串");
-                label.setForeground(Color.WHITE);
-                label.setBackground(Color.GRAY);
+                setText("空字符串");
+                setForeground(Color.WHITE);
+                setBackground(Color.GRAY);
             }
-            label.setOpaque(true);
-            return label;
+            setOpaque(true);
+            return this;
         } else {
             return defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
