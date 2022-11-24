@@ -23,6 +23,18 @@ public class FetchDecorator {
         }
     }
 
+    public ArrayList<Object[]> fetchAllRowsAsObjects() {
+        blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.tableName));
+        try {
+            ArrayList<Object[]> rows = new ArrayList<>(fetch.fetchAllRowsAsObjects());
+            blackboard.postInfo("查询到%d行".formatted(rows.size()));
+            return rows;
+        } catch (Sql2oException exception) {
+            handleError(exception.getCause());
+            return new ArrayList<>();
+        }
+    }
+
     public String[][] fetchPredicate(String predicate) {
         blackboard.postInfo("使用谓词查询");
         try {

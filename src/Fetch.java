@@ -64,6 +64,20 @@ public class Fetch {
         return ans;
     }
 
+    public ArrayList<Object[]> fetchAllRowsAsObjects() {
+        List<Row> rows = getTable().rows();
+        int colCnt = getTable().columns().size();
+        ArrayList<Object[]> ans = new ArrayList<>(rows.size());
+        for (Row row : rows) {
+            Object[] objects = new Object[colCnt];
+            for (int i = 0; i < colCnt; i++) {
+                objects[i] = row.getObject(i);
+            }
+            ans.add(objects);
+        }
+        return ans;
+    }
+
     public String[][] fetchPredicate(String predicate) {
         try (Connection con = db.open()) {
             List<Row> rows = con
