@@ -1,7 +1,9 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
@@ -37,6 +39,10 @@ public class DbMgr {
         blackboard = new Blackboard(notifications);
         fetch = new FetchDecorator(blackboard, new Fetch("employee"));
         adjuster = getColumnWidthAdjuster();
+        QueryResultTable.setDefaultRenderer(
+                Object.class,
+                new ExplicitTableCellRenderer(QueryResultTable.getDefaultRenderer(Objects.class))
+        );
         CancelOperationButton.addActionListener(e -> SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose());
         doSingleInsert.addActionListener(this::handleSingleInsert);
         doManyLineInsert.addActionListener(this::handleManyLineInsert);
@@ -64,8 +70,9 @@ public class DbMgr {
     }
 
     private void handleFetchAllRows(ActionEvent actionEvent) {
+        ArrayList<Object[]> rowsAsObjects = fetch.fetchAllRowsAsObjects();
         QueryResultTable.setModel(
-                new DefaultTableModel(fetch.fetchAllRows().toArray(String[][]::new), fetch.getColumnHeaders())
+                new DefaultTableModel(rowsAsObjects.toArray(Object[][]::new), fetch.getColumnHeaders())
         );
         adjuster.adjustColumns();
     }
