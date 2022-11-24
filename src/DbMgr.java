@@ -41,7 +41,7 @@ public class DbMgr {
         adjuster = getColumnWidthAdjuster();
         QueryResultTable.setDefaultRenderer(
                 Object.class,
-                new ExplicitTableCellRenderer(QueryResultTable.getDefaultRenderer(Objects.class))
+                new HighlightNullAndEmptyString(QueryResultTable.getDefaultRenderer(Objects.class))
         );
         CancelOperationButton.addActionListener(e -> SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose());
         doSingleInsert.addActionListener(this::handleSingleInsert);
