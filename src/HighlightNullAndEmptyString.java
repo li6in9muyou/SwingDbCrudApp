@@ -1,8 +1,9 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
-public class HighlightNullAndEmptyString extends DefaultListCellRenderer implements TableCellRenderer {
+public class HighlightNullAndEmptyString extends DefaultTableCellRenderer implements TableCellRenderer {
     private final TableCellRenderer defaultRenderer;
 
     public HighlightNullAndEmptyString(TableCellRenderer defaultRenderer) {
