@@ -1,10 +1,17 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
+import java.util.Arrays;
+import java.util.Vector;
+import java.util.stream.Collectors;
 
 public class DbMgr {
+    private final FetchDecorator fetch;
+    private final Blackboard blackboard;
+    private final TableColumnAdjuster adjuster;
     JPanel Show;
     private JTable QueryResultTable;
-    private JButton InsertRowButton;
+    private JButton StageSelectedRowsButton;
     private JButton DeleteRowButton;
     private JButton HelpButton;
     private JButton CancelOperationButton;
@@ -15,14 +22,28 @@ public class DbMgr {
     private JCheckBox ToggleAutoCommitCheckBox;
     private JLabel RowCountLabel;
     private JComboBox<String> SelectedTable;
+    private JTextArea singleLineInsert;
+    private JTextArea multiLineInsert;
+    private JTextArea subQueryInsert;
+    private JButton doSingleInsert;
+    private JButton doManyLineInsert;
+    private JButton doSubQueryInsert;
+    private JTextPane notifications;
+    private JTextField subQueryPredicate;
+    private JButton fetchPreview;
     private boolean shouldAutoCommit;
 
     public DbMgr() {
-        QueryResultTable.setModel(new DatabaseTableDataModel("employee"));
-        InsertRowButton.addActionListener(DbMgr::HandleInsertRow);
-        CancelOperationButton.addActionListener(e -> {
-            SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose();
-        });
+        blackboard = new Blackboard(notifications);
+        fetch = new FetchDecorator(blackboard, new Fetch("employee"));
+        adjuster = getColumnWidthAdjuster();
+        CancelOperationButton.addActionListener(e -> SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose());
+        doSingleInsert.addActionListener(this::handleSingleInsert);
+        doManyLineInsert.addActionListener(this::handleManyLineInsert);
+        doSubQueryInsert.addActionListener(this::handleSubQueryInsert);
+        LoadMoreIntoMemoryButton.addActionListener(this::handleFetchAllRows);
+        StageSelectedRowsButton.addActionListener(this::handleStageSelectedRows);
+        fetchPreview.addActionListener(this::handleFetchSubQueryPreview);
     }
 
     public static void main(String[] args) {
@@ -42,31 +63,70 @@ public class DbMgr {
         frame.setVisible(true);
     }
 
-    private static void HandleInsertRow(ActionEvent e) {
-        JTextField firstName = new JTextField();
-        JTextField lastName = new JTextField();
-        JPasswordField password = new JPasswordField();
-        final JComponent[] inputs = new JComponent[]{
-                new JLabel("First"),
-                firstName,
-                new JLabel("Last"),
-                lastName,
-                new JLabel("Password"),
-                password
-        };
-        int result = JOptionPane.showConfirmDialog(
-                null,
-                inputs,
-                "添加一行",
-                JOptionPane.DEFAULT_OPTION
+    private void handleFetchAllRows(ActionEvent actionEvent) {
+        QueryResultTable.setModel(
+                new DefaultTableModel(fetch.fetchAllRows().toArray(String[][]::new), fetch.getColumnHeaders())
         );
-        if (result == JOptionPane.OK_OPTION) {
-            System.out.println("You entered " +
-                    firstName.getText() + ", " +
-                    lastName.getText() + ", " +
-                    password.getText());
+        adjuster.adjustColumns();
+    }
+
+    private void handleFetchSubQueryPreview(ActionEvent actionEvent) {
+        String[][] rows = fetch.fetchPredicate(subQueryPredicate.getText());
+        subQueryInsert.setText(
+                Arrays.stream(rows)
+                        .map(row -> String.join(",", row))
+                        .collect(Collectors.joining("\n"))
+        );
+    }
+
+    private void handleStageSelectedRows(ActionEvent actionEvent) {
+        int[] selectedRows = QueryResultTable.getSelectedRows();
+        blackboard.postTrace("SelectedRows = " + Arrays.toString(selectedRows));
+
+        int columnCount = QueryResultTable.getColumnCount();
+        String[] result = new String[columnCount];
+        if (selectedRows.length == 1) {
+            int row = selectedRows[0];
+            for (int i = 0; i < columnCount; i++) {
+                result[i] = (String) QueryResultTable.getModel().getValueAt(row, i);
+            }
+            singleLineInsert.setText(String.join(",", result));
         } else {
-            System.out.println("User canceled / closed the dialog, result = " + result);
+            Vector<String> rows = new Vector<>();
+            for (int row : selectedRows) {
+                for (int i = 0; i < columnCount; i++) {
+                    result[i] = (String) QueryResultTable.getModel().getValueAt(row, i);
+                }
+                rows.add(String.join(",", result));
+            }
+            multiLineInsert.setText(String.join("\n", rows));
         }
+    }
+
+    private TableColumnAdjuster getColumnWidthAdjuster() {
+        TableColumnAdjuster adj = new TableColumnAdjuster(QueryResultTable);
+        adj.setOnlyAdjustLarger(true);
+        adj.setColumnDataIncluded(true);
+        return adj;
+    }
+
+    private void handleSingleInsert(ActionEvent actionEvent) {
+        String text = singleLineInsert.getText();
+        String[] fields = text.split(",");
+        fetch.createRows(new String[][]{fields});
+    }
+
+    private void handleManyLineInsert(ActionEvent actionEvent) {
+        String text = multiLineInsert.getText();
+        String[] lines = text.split("[\r\n]");
+        String[][] rows = Arrays.stream(lines).map(line -> line.split(",")).toArray(String[][]::new);
+        fetch.createRows(rows);
+    }
+
+    private void handleSubQueryInsert(ActionEvent actionEvent) {
+        String text = subQueryInsert.getText();
+        String[] lines = text.split("[\r\n]");
+        String[][] rows = Arrays.stream(lines).map(line -> line.split(",")).toArray(String[][]::new);
+        fetch.createRows(rows);
     }
 }
