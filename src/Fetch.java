@@ -177,7 +177,7 @@ public class Fetch {
                 kill.executeBatch();
                 con.commit();
             } catch (Sql2oException e) {
-                return e;
+                return ((SQLException) e.getCause()).getNextException();
             }
         }
         memIsStale = true;
