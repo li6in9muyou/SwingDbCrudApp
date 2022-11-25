@@ -3,6 +3,7 @@ import com.ibm.db2.jcc.DB2Sqlca;
 import org.sql2o.Connection;
 import org.sql2o.Query;
 import org.sql2o.Sql2o;
+import org.sql2o.Sql2oException;
 import org.sql2o.data.Column;
 import org.sql2o.data.Row;
 import org.sql2o.data.Table;
@@ -171,8 +172,12 @@ public class Fetch {
             for (Object victim : victims) {
                 kill.addParameter("pk", victim).addToBatch();
             }
-            kill.executeBatch();
-            con.commit();
+            try {
+                kill.executeBatch();
+                con.commit();
+            } catch (Sql2oException e) {
+                return e;
+            }
         }
         return null;
     }
