@@ -78,16 +78,14 @@ public class DbMgr {
 
     private void handleDeleteRow(ActionEvent actionEvent) {
         int[] selectedRows = QueryResultTable.getSelectedRows();
-        int[] pkCol = fetch.getPrimaryKeyColumns();
-        Vector<Object[]> victims = new Vector<>();
+        int pkCol = fetch.getPrimaryKeyColumn();
+        Vector<Object> victims = new Vector<>();
         for (int row : selectedRows) {
-            Object[] rowPK = new Object[pkCol.length];
-            for (int i = 0; i < rowPK.length; i++) {
-                rowPK[i] = QueryResultTable.getModel().getValueAt(row, i);
-            }
-            victims.add(rowPK);
+            victims.add(
+                    QueryResultTable.getModel().getValueAt(row, pkCol)
+            );
         }
-        fetch.deleteRows(victims.toArray(Object[][]::new));
+        fetch.deleteRows(victims.toArray());
     }
 
     private void handleFetchAllRows(ActionEvent actionEvent) {

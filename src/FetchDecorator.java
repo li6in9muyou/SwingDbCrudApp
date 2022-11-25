@@ -11,8 +11,8 @@ public class FetchDecorator {
         this.fetch = fetch;
     }
 
-    public int[] getPrimaryKeyColumns() {
-        return fetch.getPrimaryKeyColumns();
+    public int getPrimaryKeyColumn() {
+        return fetch.getPrimaryKeyColumn();
     }
 
     public ArrayList<String[]> fetchAllRows() {
@@ -75,7 +75,7 @@ public class FetchDecorator {
         }
     }
 
-    public void deleteRows(Object[][] victims) {
+    public void deleteRows(Object[] victims) {
         blackboard.postError("即将删除行");
         Throwable error = fetch.deleteRows(victims);
         handleError(error);

@@ -157,17 +157,19 @@ public class Fetch {
         return table.columns().stream().map(Column::toString).toArray(String[]::new);
     }
 
-    public int[] getPrimaryKeyColumns() {
-        return new int[]{1};
+    public int getPrimaryKeyColumn() {
+        return 0;
     }
 
-    public Throwable deleteRows(Object[][] victims) {
+    public Throwable deleteRows(Object[] victims) {
         try (Connection con = db.beginTransaction()) {
             con.setRollbackOnException(true);
-            Query kill = con.createQuery("delete from %s where 1=:emp".formatted(tableName));
-            for (Object[] victim : victims) {
-                int id = (int) victim[0];
-                kill.addParameter("emp", id).addToBatch();
+            String pkColName = getTable().columns().get(getPrimaryKeyColumn()).getName();
+            Query kill = con.createQuery(
+                    "delete from %s where %s = :pk".formatted(tableName, pkColName)
+            );
+            for (Object victim : victims) {
+                kill.addParameter("pk", victim).addToBatch();
             }
             kill.executeBatch();
             con.commit();
