@@ -56,6 +56,7 @@ public class DbMgr {
         LoadMoreIntoMemoryButton.addActionListener(this::handleFetchAllRows);
         StageSelectedRowsButton.addActionListener(this::handleStageSelectedRows);
         fetchPreview.addActionListener(this::handleFetchSubQueryPreview);
+        DeleteRowButton.addActionListener(this::handleDeleteRow);
     }
 
     public static void main(String[] args) {
@@ -73,6 +74,20 @@ public class DbMgr {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+    }
+
+    private void handleDeleteRow(ActionEvent actionEvent) {
+        int[] selectedRows = QueryResultTable.getSelectedRows();
+        int[] pkCol = fetch.getPrimaryKeyColumns();
+        Vector<Object[]> victims = new Vector<>();
+        for (int row : selectedRows) {
+            Object[] rowPK = new Object[pkCol.length];
+            for (int i = 0; i < rowPK.length; i++) {
+                rowPK[i] = QueryResultTable.getModel().getValueAt(row, i);
+            }
+            victims.add(rowPK);
+        }
+        fetch.deleteRows(victims.toArray(Object[][]::new));
     }
 
     private void handleFetchAllRows(ActionEvent actionEvent) {

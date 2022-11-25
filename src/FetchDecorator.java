@@ -11,6 +11,10 @@ public class FetchDecorator {
         this.fetch = fetch;
     }
 
+    public int[] getPrimaryKeyColumns() {
+        return fetch.getPrimaryKeyColumns();
+    }
+
     public ArrayList<String[]> fetchAllRows() {
         blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.tableName));
         try {
@@ -69,5 +73,11 @@ public class FetchDecorator {
             blackboard.postInfo("成功");
             System.out.println("operation is successful");
         }
+    }
+
+    public void deleteRows(Object[][] victims) {
+        blackboard.postError("即将删除行");
+        Throwable error = fetch.deleteRows(victims);
+        handleError(error);
     }
 }

@@ -1,6 +1,7 @@
 import com.ibm.db2.jcc.DB2Diagnosable;
 import com.ibm.db2.jcc.DB2Sqlca;
 import org.sql2o.Connection;
+import org.sql2o.Query;
 import org.sql2o.Sql2o;
 import org.sql2o.data.Column;
 import org.sql2o.data.Row;
@@ -154,5 +155,23 @@ public class Fetch {
 
     public String[] getColumnHeaders() {
         return table.columns().stream().map(Column::toString).toArray(String[]::new);
+    }
+
+    public int[] getPrimaryKeyColumns() {
+        return new int[]{1};
+    }
+
+    public Throwable deleteRows(Object[][] victims) {
+        try (Connection con = db.beginTransaction()) {
+            con.setRollbackOnException(true);
+            Query kill = con.createQuery("delete from %s where 1=:emp".formatted(tableName));
+            for (Object[] victim : victims) {
+                int id = (int) victim[0];
+                kill.addParameter("emp", id).addToBatch();
+            }
+            kill.executeBatch();
+            con.commit();
+        }
+        return null;
     }
 }
