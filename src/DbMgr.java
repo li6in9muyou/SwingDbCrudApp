@@ -1,7 +1,8 @@
 import javax.swing.*;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Vector;
@@ -11,6 +12,7 @@ public class DbMgr {
     private final FetchDecorator fetch;
     private final Blackboard blackboard;
     private final TableColumnAdjuster adjuster;
+    private final DefaultTableModel dataModel;
     JPanel Show;
     private JTable QueryResultTable;
     private JButton StageSelectedRowsButton;
@@ -39,10 +41,14 @@ public class DbMgr {
         blackboard = new Blackboard(notifications);
         fetch = new FetchDecorator(blackboard, new Fetch("employee"));
         adjuster = getColumnWidthAdjuster();
+        dataModel = new DefaultTableModel();
+        QueryResultTable.setModel(dataModel);
         QueryResultTable.setDefaultRenderer(
                 Object.class,
                 new HighlightNullAndEmptyString(QueryResultTable.getDefaultRenderer(Objects.class))
         );
+        RowCountLabel.setText("还没有载入数据");
+        dataModel.addTableModelListener(this::updateRowCountLabel);
         CancelOperationButton.addActionListener(e -> SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose());
         doSingleInsert.addActionListener(this::handleSingleInsert);
         doManyLineInsert.addActionListener(this::handleManyLineInsert);
@@ -70,11 +76,16 @@ public class DbMgr {
     }
 
     private void handleFetchAllRows(ActionEvent actionEvent) {
-        ArrayList<Object[]> rowsAsObjects = fetch.fetchAllRowsAsObjects();
-        QueryResultTable.setModel(
-                new DefaultTableModel(rowsAsObjects.toArray(Object[][]::new), fetch.getColumnHeaders())
+        dataModel.setDataVector(
+                fetch.fetchAllRowsAsObjects().toArray(Object[][]::new),
+                fetch.getColumnHeaders()
         );
         adjuster.adjustColumns();
+    }
+
+    private void updateRowCountLabel(TableModelEvent event) {
+        int count = ((TableModel) event.getSource()).getRowCount();
+        RowCountLabel.setText("内存中的%d行".formatted(count));
     }
 
     private void handleFetchSubQueryPreview(ActionEvent actionEvent) {
