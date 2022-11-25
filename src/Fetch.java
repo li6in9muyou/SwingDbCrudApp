@@ -1,11 +1,14 @@
 import com.ibm.db2.jcc.DB2Diagnosable;
 import com.ibm.db2.jcc.DB2Sqlca;
 import org.sql2o.Connection;
+import org.sql2o.Query;
 import org.sql2o.Sql2o;
+import org.sql2o.Sql2oException;
 import org.sql2o.data.Column;
 import org.sql2o.data.Row;
 import org.sql2o.data.Table;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,6 +63,20 @@ public class Fetch {
                 rowText[i] = row.getString(i);
             }
             ans.add(rowText);
+        }
+        return ans;
+    }
+
+    public ArrayList<Object[]> fetchAllRowsAsObjects() {
+        List<Row> rows = getTable().rows();
+        int colCnt = getTable().columns().size();
+        ArrayList<Object[]> ans = new ArrayList<>(rows.size());
+        for (Row row : rows) {
+            Object[] objects = new Object[colCnt];
+            for (int i = 0; i < colCnt; i++) {
+                objects[i] = row.getObject(i);
+            }
+            ans.add(objects);
         }
         return ans;
     }
@@ -140,5 +157,30 @@ public class Fetch {
 
     public String[] getColumnHeaders() {
         return table.columns().stream().map(Column::toString).toArray(String[]::new);
+    }
+
+    public int getPrimaryKeyColumn() {
+        return 0;
+    }
+
+    public Throwable deleteRows(Object[] victims) {
+        try (Connection con = db.beginTransaction()) {
+            con.setRollbackOnException(true);
+            String pkColName = getTable().columns().get(getPrimaryKeyColumn()).getName();
+            Query kill = con.createQuery(
+                    "delete from %s where %s = :pk".formatted(tableName, pkColName)
+            );
+            for (Object victim : victims) {
+                kill.addParameter("pk", victim).addToBatch();
+            }
+            try {
+                kill.executeBatch();
+                con.commit();
+            } catch (Sql2oException e) {
+                return ((SQLException) e.getCause()).getNextException();
+            }
+        }
+        memIsStale = true;
+        return null;
     }
 }

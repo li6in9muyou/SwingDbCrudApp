@@ -11,10 +11,26 @@ public class FetchDecorator {
         this.fetch = fetch;
     }
 
+    public int getPrimaryKeyColumn() {
+        return fetch.getPrimaryKeyColumn();
+    }
+
     public ArrayList<String[]> fetchAllRows() {
         blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.tableName));
         try {
             ArrayList<String[]> rows = new ArrayList<>(fetch.fetchAllRows());
+            blackboard.postInfo("查询到%d行".formatted(rows.size()));
+            return rows;
+        } catch (Sql2oException exception) {
+            handleError(exception.getCause());
+            return new ArrayList<>();
+        }
+    }
+
+    public ArrayList<Object[]> fetchAllRowsAsObjects() {
+        blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.tableName));
+        try {
+            ArrayList<Object[]> rows = new ArrayList<>(fetch.fetchAllRowsAsObjects());
             blackboard.postInfo("查询到%d行".formatted(rows.size()));
             return rows;
         } catch (Sql2oException exception) {
@@ -57,5 +73,11 @@ public class FetchDecorator {
             blackboard.postInfo("成功");
             System.out.println("operation is successful");
         }
+    }
+
+    public void deleteRows(Object[] victims) {
+        blackboard.postError("即将删除行");
+        Throwable error = fetch.deleteRows(victims);
+        handleError(error);
     }
 }
