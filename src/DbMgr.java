@@ -133,8 +133,10 @@ public class DbMgr {
         JTextArea stage;
         if (selectedRows.length == 1) {
             stage = singleLineInsert;
+            featureTabs.setSelectedIndex(featSingleInsert);
         } else {
             stage = multiLineInsert;
+            featureTabs.setSelectedIndex(featManyInsert);
         }
 
         int columnCount = QueryResultTable.getColumnCount();
