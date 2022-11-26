@@ -57,6 +57,7 @@ public class DbMgr {
         StageSelectedRowsButton.addActionListener(this::handleStageSelectedRows);
         fetchPreview.addActionListener(this::handleFetchSubQueryPreview);
         DeleteRowButton.addActionListener(this::handleDeleteRow);
+        FilterButton.addActionListener(this::handleFetchFilteredRows);
     }
 
     public static void main(String[] args) {
@@ -74,6 +75,13 @@ public class DbMgr {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+    }
+
+    private void handleFetchFilteredRows(ActionEvent actionEvent) {
+        featureTabs.setSelectedIndex(featSubQueryInsert);
+        if (subQueryPredicate.getText().isEmpty()) {
+            blackboard.postInfo("请先输入谓词再进行过滤");
+        }
     }
 
     private void handleCommitChange(ActionEvent actionEvent) {
