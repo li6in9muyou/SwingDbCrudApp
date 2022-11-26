@@ -80,4 +80,8 @@ public class FetchDecorator {
         Throwable error = fetch.deleteRows(victims);
         handleError(error);
     }
+
+    public Patch createPatch(Object pk, int modifiedCol, Object newVal) {
+        return new Patch(fetch, pk, modifiedCol, newVal);
+    }
 }

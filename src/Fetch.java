@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Fetch {
+public class Fetch implements TableMeta {
     private static final Sql2o db;
 
     static {
@@ -36,6 +36,16 @@ public class Fetch {
     public Fetch(String tableName) {
         this.tableName = tableName;
 
+    }
+
+    @Override
+    public String getColumnName(int col) {
+        return getTable().columns().get(col).getName();
+    }
+
+    @Override
+    public String getTableName() {
+        return tableName;
     }
 
     private Table getTable() {
@@ -181,6 +191,10 @@ public class Fetch {
             }
         }
         memIsStale = true;
+        return null;
+    }
+
+    public Throwable updateRows(Patch[] patches) {
         return null;
     }
 }
