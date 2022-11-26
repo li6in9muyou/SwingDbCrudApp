@@ -113,25 +113,28 @@ public class DbMgr {
     private void handleStageSelectedRows(ActionEvent actionEvent) {
         int[] selectedRows = QueryResultTable.getSelectedRows();
         blackboard.postTrace("SelectedRows = " + Arrays.toString(selectedRows));
+        JTextArea stage;
+        if (selectedRows.length == 1) {
+            stage = singleLineInsert;
+        } else {
+            stage = multiLineInsert;
+        }
 
         int columnCount = QueryResultTable.getColumnCount();
-        String[] result = new String[columnCount];
-        if (selectedRows.length == 1) {
-            int row = selectedRows[0];
+        Vector<String> rows = new Vector<>();
+        for (int row : selectedRows) {
+            String[] result = new String[columnCount];
             for (int i = 0; i < columnCount; i++) {
-                result[i] = (String) QueryResultTable.getModel().getValueAt(row, i);
-            }
-            singleLineInsert.setText(String.join(",", result));
-        } else {
-            Vector<String> rows = new Vector<>();
-            for (int row : selectedRows) {
-                for (int i = 0; i < columnCount; i++) {
-                    result[i] = (String) QueryResultTable.getModel().getValueAt(row, i);
+                Object value = QueryResultTable.getModel().getValueAt(row, i);
+                if (value == null) {
+                    result[i] = "null";
+                } else {
+                    result[i] = value.toString().stripTrailing();
                 }
-                rows.add(String.join(",", result));
             }
-            multiLineInsert.setText(String.join("\n", rows));
+            rows.add(String.join(",", result));
         }
+        stage.setText(String.join("\n", rows));
     }
 
     private TableColumnAdjuster getColumnWidthAdjuster() {
