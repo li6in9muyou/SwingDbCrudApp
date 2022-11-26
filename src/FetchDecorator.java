@@ -27,15 +27,15 @@ public class FetchDecorator {
         }
     }
 
-    public ArrayList<Object[]> fetchAllRowsAsObjects() {
+    public Object[][] fetchAllRowsAsObjects() {
         blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.tableName));
         try {
             ArrayList<Object[]> rows = new ArrayList<>(fetch.fetchAllRowsAsObjects());
             blackboard.postInfo("查询到%d行".formatted(rows.size()));
-            return rows;
+            return rows.toArray(Object[][]::new);
         } catch (Sql2oException exception) {
             handleError(exception.getCause());
-            return new ArrayList<>();
+            return new Object[0][0];
         }
     }
 

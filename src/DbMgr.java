@@ -82,9 +82,7 @@ public class DbMgr {
         if (subQueryPredicate.getText().isEmpty()) {
             blackboard.postInfo("请先输入谓词再进行过滤");
         } else {
-            String[][] rows = fetch.fetchPredicate(subQueryPredicate.getText());
-            dataModel.setDataVector(rows, fetch.getColumnHeaders());
-            adjuster.adjustColumns();
+            updateMainTable(fetch.fetchPredicate(subQueryPredicate.getText()));
         }
     }
 
@@ -118,11 +116,7 @@ public class DbMgr {
     }
 
     private void handleFetchAllRows(ActionEvent actionEvent) {
-        dataModel.setDataVector(
-                fetch.fetchAllRowsAsObjects().toArray(Object[][]::new),
-                fetch.getColumnHeaders()
-        );
-        adjuster.adjustColumns();
+        updateMainTable(fetch.fetchAllRowsAsObjects());
     }
 
     private void updateRowCountLabel(TableModelEvent event) {
@@ -193,5 +187,10 @@ public class DbMgr {
         String[] lines = text.split("[\r\n]");
         String[][] rows = Arrays.stream(lines).map(line -> line.split(",")).toArray(String[][]::new);
         fetch.createRows(rows);
+    }
+
+    private void updateMainTable(Object[][] data) {
+        dataModel.setDataVector(data, fetch.getColumnHeaders());
+        adjuster.adjustColumns();
     }
 }
