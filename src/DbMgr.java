@@ -81,6 +81,10 @@ public class DbMgr {
         featureTabs.setSelectedIndex(featSubQueryInsert);
         if (subQueryPredicate.getText().isEmpty()) {
             blackboard.postInfo("请先输入谓词再进行过滤");
+        } else {
+            String[][] rows = fetch.fetchPredicate(subQueryPredicate.getText());
+            dataModel.setDataVector(rows, fetch.getColumnHeaders());
+            adjuster.adjustColumns();
         }
     }
 
