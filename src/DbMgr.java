@@ -52,6 +52,7 @@ public class DbMgr {
         );
         RowCountLabel.setText("还没有载入数据");
         dataModel.addTableModelListener(this::updateRowCountLabel);
+        dataModel.addTableModelListener(this::handleStageOneCell);
         CancelOperationButton.addActionListener(e -> SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose());
         CommitChangeButton.addActionListener(this::handleCommitChange);
         LoadMoreIntoMemoryButton.addActionListener(this::handleFetchAllRows);
@@ -101,7 +102,13 @@ public class DbMgr {
     private void handleAnyCellEditOnCommit() {
     }
 
-    private void handleAnyCellEditOnBlur() {
+    private void handleStageOneCell(TableModelEvent e) {
+        if (e.getType() != TableModelEvent.UPDATE) {
+            return;
+        }
+        int row = e.getFirstRow();
+        int column = e.getColumn();
+        Object data = dataModel.getValueAt(row, column);
     }
 
     private void handleDeleteRow(ActionEvent actionEvent) {
