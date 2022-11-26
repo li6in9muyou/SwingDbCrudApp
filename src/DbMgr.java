@@ -9,6 +9,10 @@ import java.util.Vector;
 import java.util.stream.Collectors;
 
 public class DbMgr {
+    private static final int featSingleInsert = 0;
+    private static final int featManyInsert = 1;
+    private static final int featSubQueryInsert = 2;
+    private static final int featAnyCellEdit = 3;
     private final FetchDecorator fetch;
     private final Blackboard blackboard;
     private final TableColumnAdjuster adjuster;
@@ -29,9 +33,6 @@ public class DbMgr {
     private JTextArea singleLineInsert;
     private JTextArea multiLineInsert;
     private JTextArea subQueryInsert;
-    private JButton doSingleInsert;
-    private JButton doManyLineInsert;
-    private JButton doSubQueryInsert;
     private JTextPane notifications;
     private JTextField subQueryPredicate;
     private JButton fetchPreview;
@@ -51,9 +52,7 @@ public class DbMgr {
         RowCountLabel.setText("还没有载入数据");
         dataModel.addTableModelListener(this::updateRowCountLabel);
         CancelOperationButton.addActionListener(e -> SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose());
-        doSingleInsert.addActionListener(this::handleSingleInsert);
-        doManyLineInsert.addActionListener(this::handleManyLineInsert);
-        doSubQueryInsert.addActionListener(this::handleSubQueryInsert);
+        CommitChangeButton.addActionListener(this::handleCommitChange);
         LoadMoreIntoMemoryButton.addActionListener(this::handleFetchAllRows);
         StageSelectedRowsButton.addActionListener(this::handleStageSelectedRows);
         fetchPreview.addActionListener(this::handleFetchSubQueryPreview);
@@ -75,6 +74,23 @@ public class DbMgr {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+    }
+
+    private void handleCommitChange(ActionEvent actionEvent) {
+        int which = featureTabs.getSelectedIndex();
+        switch (which) {
+            case featSingleInsert -> handleSingleInsert();
+            case featManyInsert -> handleManyLineInsert();
+            case featSubQueryInsert -> handleSubQueryInsert();
+            case featAnyCellEdit -> handleAnyCellEditOnCommit();
+            default -> throw new RuntimeException();
+        }
+    }
+
+    private void handleAnyCellEditOnCommit() {
+    }
+
+    private void handleAnyCellEditOnBlur() {
     }
 
     private void handleDeleteRow(ActionEvent actionEvent) {
@@ -145,20 +161,20 @@ public class DbMgr {
         return adj;
     }
 
-    private void handleSingleInsert(ActionEvent actionEvent) {
+    private void handleSingleInsert() {
         String text = singleLineInsert.getText();
         String[] fields = text.split(",");
         fetch.createRows(new String[][]{fields});
     }
 
-    private void handleManyLineInsert(ActionEvent actionEvent) {
+    private void handleManyLineInsert() {
         String text = multiLineInsert.getText();
         String[] lines = text.split("[\r\n]");
         String[][] rows = Arrays.stream(lines).map(line -> line.split(",")).toArray(String[][]::new);
         fetch.createRows(rows);
     }
 
-    private void handleSubQueryInsert(ActionEvent actionEvent) {
+    private void handleSubQueryInsert() {
         String text = subQueryInsert.getText();
         String[] lines = text.split("[\r\n]");
         String[][] rows = Arrays.stream(lines).map(line -> line.split(",")).toArray(String[][]::new);
