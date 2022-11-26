@@ -35,6 +35,7 @@ public class DbMgr {
     private JTextPane notifications;
     private JTextField subQueryPredicate;
     private JButton fetchPreview;
+    private JTabbedPane featureTabs;
     private boolean shouldAutoCommit;
 
     public DbMgr() {
