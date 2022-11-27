@@ -14,6 +14,12 @@ public class Patch {
     @Override
     public String toString() {
         String colName = meta.getColumnName(modifiedColumn);
-        return "%s 的 %s 改为 %s".formatted(meta.getTableName(), pk, colName, newValue);
+        String pkName = meta.getColumnName(meta.getPrimaryKeyColumn());
+        return "%s 是 %s 的 %s 改为 %s".formatted(
+                pkName,
+                pk,
+                colName,
+                newValue
+        );
     }
 }

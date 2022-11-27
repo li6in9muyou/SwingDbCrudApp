@@ -43,11 +43,6 @@ public class Fetch implements TableMeta {
         return getTable().columns().get(col).getName();
     }
 
-    @Override
-    public String getTableName() {
-        return tableName;
-    }
-
     private Table getTable() {
         if (table == null || memIsStale) {
             try (Connection con = db.open()) {
@@ -169,6 +164,7 @@ public class Fetch implements TableMeta {
         return table.columns().stream().map(Column::toString).toArray(String[]::new);
     }
 
+    @Override
     public int getPrimaryKeyColumn() {
         return 0;
     }
