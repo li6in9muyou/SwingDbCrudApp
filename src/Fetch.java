@@ -200,16 +200,16 @@ public class Fetch implements TableMeta {
                                 getColumnName(patch.getModifiedColumn()),
                                 getColumnName(getPrimaryKeyColumn())
                         );
-                con.createQuery(withModifiedCol)
-                        .addParameter("pk", patch.getPk())
-                        .addParameter("newVal", patch.getNewValue())
-                        .executeUpdate();
+                try {
+                    con.createQuery(withModifiedCol)
+                            .addParameter("pk", patch.getPk())
+                            .addParameter("newVal", patch.getNewValue())
+                            .executeUpdate();
+                } catch (Sql2oException e) {
+                    return e.getCause();
+                }
             }
-            try {
-                con.commit();
-            } catch (Sql2oException e) {
-                return ((SQLException) e.getCause()).getNextException();
-            }
+            con.commit();
         }
         memIsStale = true;
         return null;
