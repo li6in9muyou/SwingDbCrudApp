@@ -11,6 +11,18 @@ public class Patch {
         this.newValue = newValue;
     }
 
+    public Object getPk() {
+        return pk;
+    }
+
+    public int getModifiedColumn() {
+        return modifiedColumn;
+    }
+
+    public Object getNewValue() {
+        return newValue;
+    }
+
     @Override
     public String toString() {
         String colName = meta.getColumnName(modifiedColumn);

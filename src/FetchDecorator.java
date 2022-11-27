@@ -84,4 +84,10 @@ public class FetchDecorator {
     public Patch createPatch(Object pk, int modifiedCol, Object newVal) {
         return new Patch(fetch, pk, modifiedCol, newVal);
     }
+
+    public void commitPatches(Patch[] patches) {
+        blackboard.postInfo("提交暂存区中的更改");
+        Throwable error = fetch.updateRows(patches);
+        handleError(error);
+    }
 }

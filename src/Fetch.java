@@ -191,6 +191,39 @@ public class Fetch implements TableMeta {
     }
 
     public Throwable updateRows(Patch[] patches) {
+        try (Connection con = db.open()) {
+            con.setRollbackOnException(true);
+            Patch f = patches[0];
+            Query edit = con.createQueryWithParams(
+                    "UPDATE %s t SET t.%s = :newVal WHERE t.%s LIKE :pk"
+                            .formatted(
+                                    tableName,
+                                    getColumnName(f.getModifiedColumn()),
+                                    getColumnName(getPrimaryKeyColumn())
+                            ),
+                    f.getPk(),
+                    f.getNewValue()
+            ).addToBatch();
+            for (int i = 1; i < patches.length; i++) {
+                Patch patch = patches[i];
+                con.createQueryWithParams(
+                        "UPDATE %s t SET t.%s = :newVal WHERE t.%s LIKE :pk"
+                                .formatted(
+                                        tableName,
+                                        getColumnName(patch.getModifiedColumn()),
+                                        getColumnName(getPrimaryKeyColumn())
+                                ),
+                        patch.getPk(),
+                        patch.getNewValue()
+                ).addToBatch();
+            }
+            try {
+                edit.executeBatch();
+                con.commit();
+            } catch (Sql2oException e) {
+                return ((SQLException) e.getCause()).getNextException();
+            }
+        }
         return null;
     }
 }
