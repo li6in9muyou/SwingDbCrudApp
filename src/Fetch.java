@@ -211,6 +211,7 @@ public class Fetch implements TableMeta {
                 return ((SQLException) e.getCause()).getNextException();
             }
         }
+        memIsStale = true;
         return null;
     }
 }
