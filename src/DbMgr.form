@@ -346,7 +346,9 @@
                     <children>
                       <component id="55e40" class="javax.swing.JTextArea" binding="oneCellUpdate">
                         <constraints/>
-                        <properties/>
+                        <properties>
+                          <editable value="false"/>
+                        </properties>
                       </component>
                     </children>
                   </scrollpane>
