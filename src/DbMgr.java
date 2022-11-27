@@ -17,6 +17,7 @@ public class DbMgr {
     private final Blackboard blackboard;
     private final TableColumnAdjuster adjuster;
     private final DefaultTableModel dataModel;
+    private final Vector<Patch> StagedPatches = new Vector<>();
     JPanel Show;
     private JTable QueryResultTable;
     private JButton StageSelectedRowsButton;
@@ -108,7 +109,21 @@ public class DbMgr {
         }
         int row = e.getFirstRow();
         int column = e.getColumn();
+        boolean isTableInitEvent = row < 0 || column < 0;
+        if (isTableInitEvent) {
+            return;
+        }
         Object data = dataModel.getValueAt(row, column);
+        Object pk = dataModel.getValueAt(row, fetch.getPrimaryKeyColumn());
+        StagedPatches.add(
+                fetch.createPatch(pk, column, data)
+        );
+        oneCellUpdate.setText(
+                StagedPatches.stream()
+                        .map(Patch::toString)
+                        .collect(Collectors.joining("\n"))
+        );
+        featureTabs.setSelectedIndex(featAnyCellEdit);
     }
 
     private void handleDeleteRow(ActionEvent actionEvent) {
