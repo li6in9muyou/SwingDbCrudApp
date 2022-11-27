@@ -161,7 +161,7 @@ public class Fetch implements TableMeta {
     }
 
     public String[] getColumnHeaders() {
-        return table.columns().stream().map(Column::toString).toArray(String[]::new);
+        return getTable().columns().stream().map(Column::toString).toArray(String[]::new);
     }
 
     @Override
