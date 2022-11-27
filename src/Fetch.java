@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Fetch {
+public class Fetch implements TableMeta {
     private static final Sql2o db;
 
     static {
@@ -36,6 +36,11 @@ public class Fetch {
     public Fetch(String tableName) {
         this.tableName = tableName;
 
+    }
+
+    @Override
+    public String getColumnName(int col) {
+        return getTable().columns().get(col).getName();
     }
 
     private Table getTable() {
@@ -156,9 +161,10 @@ public class Fetch {
     }
 
     public String[] getColumnHeaders() {
-        return table.columns().stream().map(Column::toString).toArray(String[]::new);
+        return getTable().columns().stream().map(Column::toString).toArray(String[]::new);
     }
 
+    @Override
     public int getPrimaryKeyColumn() {
         return 0;
     }
@@ -175,6 +181,31 @@ public class Fetch {
             }
             try {
                 kill.executeBatch();
+                con.commit();
+            } catch (Sql2oException e) {
+                return ((SQLException) e.getCause()).getNextException();
+            }
+        }
+        memIsStale = true;
+        return null;
+    }
+
+    public Throwable updateRows(Patch[] patches) {
+        try (Connection con = db.beginTransaction()) {
+            con.setRollbackOnException(true);
+            for (Patch patch : patches) {
+                String withModifiedCol = "UPDATE %s t SET t.%s = :newVal WHERE t.%s LIKE :pk"
+                        .formatted(
+                                tableName,
+                                getColumnName(patch.getModifiedColumn()),
+                                getColumnName(getPrimaryKeyColumn())
+                        );
+                con.createQuery(withModifiedCol)
+                        .addParameter("pk", patch.getPk())
+                        .addParameter("newVal", patch.getNewValue())
+                        .executeUpdate();
+            }
+            try {
                 con.commit();
             } catch (Sql2oException e) {
                 return ((SQLException) e.getCause()).getNextException();

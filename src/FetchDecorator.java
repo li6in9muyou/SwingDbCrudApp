@@ -27,15 +27,15 @@ public class FetchDecorator {
         }
     }
 
-    public ArrayList<Object[]> fetchAllRowsAsObjects() {
+    public Object[][] fetchAllRowsAsObjects() {
         blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.tableName));
         try {
             ArrayList<Object[]> rows = new ArrayList<>(fetch.fetchAllRowsAsObjects());
             blackboard.postInfo("查询到%d行".formatted(rows.size()));
-            return rows;
+            return rows.toArray(Object[][]::new);
         } catch (Sql2oException exception) {
             handleError(exception.getCause());
-            return new ArrayList<>();
+            return new Object[0][0];
         }
     }
 
@@ -78,6 +78,16 @@ public class FetchDecorator {
     public void deleteRows(Object[] victims) {
         blackboard.postError("即将删除行");
         Throwable error = fetch.deleteRows(victims);
+        handleError(error);
+    }
+
+    public Patch createPatch(Object pk, int modifiedCol, Object newVal) {
+        return new Patch(fetch, pk, modifiedCol, newVal);
+    }
+
+    public void commitPatches(Patch[] patches) {
+        blackboard.postInfo("提交暂存区中的更改");
+        Throwable error = fetch.updateRows(patches);
         handleError(error);
     }
 }

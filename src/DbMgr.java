@@ -9,10 +9,15 @@ import java.util.Vector;
 import java.util.stream.Collectors;
 
 public class DbMgr {
+    private static final int featSingleInsert = 0;
+    private static final int featManyInsert = 1;
+    private static final int featSubQueryInsert = 2;
+    private static final int featAnyCellEdit = 3;
     private final FetchDecorator fetch;
     private final Blackboard blackboard;
     private final TableColumnAdjuster adjuster;
     private final DefaultTableModel dataModel;
+    private final Vector<Patch> StagedPatches = new Vector<>();
     JPanel Show;
     private JTable QueryResultTable;
     private JButton StageSelectedRowsButton;
@@ -29,12 +34,11 @@ public class DbMgr {
     private JTextArea singleLineInsert;
     private JTextArea multiLineInsert;
     private JTextArea subQueryInsert;
-    private JButton doSingleInsert;
-    private JButton doManyLineInsert;
-    private JButton doSubQueryInsert;
     private JTextPane notifications;
     private JTextField subQueryPredicate;
     private JButton fetchPreview;
+    private JTabbedPane featureTabs;
+    private JTextArea oneCellUpdate;
     private boolean shouldAutoCommit;
 
     public DbMgr() {
@@ -49,14 +53,14 @@ public class DbMgr {
         );
         RowCountLabel.setText("还没有载入数据");
         dataModel.addTableModelListener(this::updateRowCountLabel);
+        dataModel.addTableModelListener(this::handleStageOneCell);
         CancelOperationButton.addActionListener(e -> SwingUtilities.getWindowAncestor((JComponent) e.getSource()).dispose());
-        doSingleInsert.addActionListener(this::handleSingleInsert);
-        doManyLineInsert.addActionListener(this::handleManyLineInsert);
-        doSubQueryInsert.addActionListener(this::handleSubQueryInsert);
+        CommitChangeButton.addActionListener(this::handleCommitChange);
         LoadMoreIntoMemoryButton.addActionListener(this::handleFetchAllRows);
         StageSelectedRowsButton.addActionListener(this::handleStageSelectedRows);
         fetchPreview.addActionListener(this::handleFetchSubQueryPreview);
         DeleteRowButton.addActionListener(this::handleDeleteRow);
+        FilterButton.addActionListener(this::handleFetchFilteredRows);
     }
 
     public static void main(String[] args) {
@@ -76,6 +80,55 @@ public class DbMgr {
         frame.setVisible(true);
     }
 
+    private void handleFetchFilteredRows(ActionEvent actionEvent) {
+        featureTabs.setSelectedIndex(featSubQueryInsert);
+        if (subQueryPredicate.getText().isEmpty()) {
+            blackboard.postInfo("请先输入谓词再进行过滤");
+        } else {
+            updateMainTable(fetch.fetchPredicate(subQueryPredicate.getText()));
+        }
+    }
+
+    private void handleCommitChange(ActionEvent actionEvent) {
+        int which = featureTabs.getSelectedIndex();
+        switch (which) {
+            case featSingleInsert -> handleSingleInsert();
+            case featManyInsert -> handleManyLineInsert();
+            case featSubQueryInsert -> handleSubQueryInsert();
+            case featAnyCellEdit -> handleAnyCellEditOnCommit();
+            default -> throw new RuntimeException();
+        }
+    }
+
+    private void handleAnyCellEditOnCommit() {
+        fetch.commitPatches(StagedPatches.toArray(Patch[]::new));
+        StagedPatches.clear();
+        oneCellUpdate.setText("");
+    }
+
+    private void handleStageOneCell(TableModelEvent e) {
+        if (e.getType() != TableModelEvent.UPDATE) {
+            return;
+        }
+        int row = e.getFirstRow();
+        int column = e.getColumn();
+        boolean isTableInitEvent = row < 0 || column < 0;
+        if (isTableInitEvent) {
+            return;
+        }
+        Object data = dataModel.getValueAt(row, column);
+        Object pk = dataModel.getValueAt(row, fetch.getPrimaryKeyColumn());
+        StagedPatches.add(
+                fetch.createPatch(pk, column, data)
+        );
+        oneCellUpdate.setText(
+                StagedPatches.stream()
+                        .map(Patch::toString)
+                        .collect(Collectors.joining("\n"))
+        );
+        featureTabs.setSelectedIndex(featAnyCellEdit);
+    }
+
     private void handleDeleteRow(ActionEvent actionEvent) {
         int[] selectedRows = QueryResultTable.getSelectedRows();
         int pkCol = fetch.getPrimaryKeyColumn();
@@ -89,11 +142,7 @@ public class DbMgr {
     }
 
     private void handleFetchAllRows(ActionEvent actionEvent) {
-        dataModel.setDataVector(
-                fetch.fetchAllRowsAsObjects().toArray(Object[][]::new),
-                fetch.getColumnHeaders()
-        );
-        adjuster.adjustColumns();
+        updateMainTable(fetch.fetchAllRowsAsObjects());
     }
 
     private void updateRowCountLabel(TableModelEvent event) {
@@ -113,25 +162,30 @@ public class DbMgr {
     private void handleStageSelectedRows(ActionEvent actionEvent) {
         int[] selectedRows = QueryResultTable.getSelectedRows();
         blackboard.postTrace("SelectedRows = " + Arrays.toString(selectedRows));
+        JTextArea stage;
+        if (selectedRows.length == 1) {
+            stage = singleLineInsert;
+            featureTabs.setSelectedIndex(featSingleInsert);
+        } else {
+            stage = multiLineInsert;
+            featureTabs.setSelectedIndex(featManyInsert);
+        }
 
         int columnCount = QueryResultTable.getColumnCount();
-        String[] result = new String[columnCount];
-        if (selectedRows.length == 1) {
-            int row = selectedRows[0];
+        Vector<String> rows = new Vector<>();
+        for (int row : selectedRows) {
+            String[] result = new String[columnCount];
             for (int i = 0; i < columnCount; i++) {
-                result[i] = (String) QueryResultTable.getModel().getValueAt(row, i);
-            }
-            singleLineInsert.setText(String.join(",", result));
-        } else {
-            Vector<String> rows = new Vector<>();
-            for (int row : selectedRows) {
-                for (int i = 0; i < columnCount; i++) {
-                    result[i] = (String) QueryResultTable.getModel().getValueAt(row, i);
+                Object value = QueryResultTable.getModel().getValueAt(row, i);
+                if (value == null) {
+                    result[i] = "null";
+                } else {
+                    result[i] = value.toString().stripTrailing();
                 }
-                rows.add(String.join(",", result));
             }
-            multiLineInsert.setText(String.join("\n", rows));
+            rows.add(String.join(",", result));
         }
+        stage.setText(String.join("\n", rows));
     }
 
     private TableColumnAdjuster getColumnWidthAdjuster() {
@@ -141,23 +195,28 @@ public class DbMgr {
         return adj;
     }
 
-    private void handleSingleInsert(ActionEvent actionEvent) {
+    private void handleSingleInsert() {
         String text = singleLineInsert.getText();
         String[] fields = text.split(",");
         fetch.createRows(new String[][]{fields});
     }
 
-    private void handleManyLineInsert(ActionEvent actionEvent) {
+    private void handleManyLineInsert() {
         String text = multiLineInsert.getText();
         String[] lines = text.split("[\r\n]");
         String[][] rows = Arrays.stream(lines).map(line -> line.split(",")).toArray(String[][]::new);
         fetch.createRows(rows);
     }
 
-    private void handleSubQueryInsert(ActionEvent actionEvent) {
+    private void handleSubQueryInsert() {
         String text = subQueryInsert.getText();
         String[] lines = text.split("[\r\n]");
         String[][] rows = Arrays.stream(lines).map(line -> line.split(",")).toArray(String[][]::new);
         fetch.createRows(rows);
+    }
+
+    private void updateMainTable(Object[][] data) {
+        dataModel.setDataVector(data, fetch.getColumnHeaders());
+        adjuster.adjustColumns();
     }
 }
