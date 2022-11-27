@@ -101,6 +101,9 @@ public class DbMgr {
     }
 
     private void handleAnyCellEditOnCommit() {
+        fetch.commitPatches(StagedPatches.toArray(Patch[]::new));
+        StagedPatches.clear();
+        oneCellUpdate.setText("");
     }
 
     private void handleStageOneCell(TableModelEvent e) {
