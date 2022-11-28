@@ -104,7 +104,7 @@ public class Fetch implements TableMeta {
         }
     }
 
-    private String defaultParams(int count) {
+    private String makeParamMarkers(int count) {
         StringBuilder sb = new StringBuilder();
         sb.append(":p1");
         for (int i = 2; i < count + 1; i++) {
@@ -119,7 +119,7 @@ public class Fetch implements TableMeta {
                 con.setRollbackOnException(true);
                 for (String[] row : rows) {
                     con.createQueryWithParams(
-                            "insert into %s values ( %s )".formatted(tableName, defaultParams(getTable().columns().size())),
+                            "insert into %s values ( %s )".formatted(tableName, makeParamMarkers(getTable().columns().size())),
                             row[0],
                             row[1],
                             row[2],
