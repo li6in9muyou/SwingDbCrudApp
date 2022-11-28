@@ -117,9 +117,13 @@ public class Fetch implements TableMeta {
         try {
             try (Connection con = db.beginTransaction()) {
                 con.setRollbackOnException(true);
+                Query insert = con.createQueryWithParams(
+                        "insert into %s values ( %s )".formatted(
+                                tableName, makeParamMarkers(getTable().columns().size())
+                        )
+                );
                 for (String[] row : rows) {
-                    con.createQueryWithParams(
-                            "insert into %s values ( %s )".formatted(tableName, makeParamMarkers(getTable().columns().size())),
+                    insert.withParams(
                             row[0],
                             row[1],
                             row[2],
@@ -134,10 +138,11 @@ public class Fetch implements TableMeta {
                             Double.parseDouble(row[11]),
                             Double.parseDouble(row[12]),
                             Double.parseDouble(row[13])
-                    ).executeUpdate();
-                    con.commit();
-                    memIsStale = true;
+                    ).addToBatch();
                 }
+                insert.executeBatch();
+                con.commit();
+                memIsStale = true;
             }
             return null;
         } catch (Exception exception) {
