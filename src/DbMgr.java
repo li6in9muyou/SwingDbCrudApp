@@ -74,10 +74,33 @@ public class DbMgr {
             }
         }
         JFrame frame = new JFrame("数据表管理器");
-        frame.setContentPane(new DbMgr().Show);
+        DbMgr dbMgr = new DbMgr();
+        frame.setContentPane(dbMgr.Show);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+        dbMgr.setUpConnectionOrExit();
+    }
+
+    private void setUpConnectionOrExit() {
+        while (true) {
+            boolean failed = fetch.initConnection();
+            if (!failed) {
+                return;
+            } else {
+                int c = JOptionPane.showConfirmDialog(
+                        Show,
+                        "连接数据库失败，要不要重试？",
+                        "灾难性错误",
+                        JOptionPane.YES_NO_OPTION
+                );
+                boolean userGiveUp = c == JOptionPane.NO_OPTION || c == JOptionPane.CLOSED_OPTION;
+                if (userGiveUp) {
+                    CancelOperationButton.doClick();
+                    return;
+                }
+            }
+        }
     }
 
     private void handleFetchFilteredRows(ActionEvent actionEvent) {

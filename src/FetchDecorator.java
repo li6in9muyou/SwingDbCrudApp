@@ -101,4 +101,11 @@ public class FetchDecorator {
         blackboard.postInfo("提交暂存区中的更改");
         decorateUpsert(() -> fetch.updateRows(patches));
     }
+
+    public boolean initConnection() {
+        blackboard.postInfo("尝试连接到数据库");
+        Throwable error = fetch.initConnection();
+        handleError(error);
+        return error != null;
+    }
 }

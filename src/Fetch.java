@@ -13,9 +13,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Fetch implements TableMeta {
-    private static final Sql2o db;
+    public final String tableName;
+    private Sql2o db;
+    private Table table;
+    private boolean memIsStale;
 
-    static {
+    public Fetch(String tableName) {
+        this.tableName = tableName;
+    }
+
+    Throwable initConnection() {
         try {
             Class.forName("com.ibm.db2.jcc.DB2Driver");
             db = new Sql2o(
@@ -25,17 +32,9 @@ public class Fetch implements TableMeta {
                     "student"
             );
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            return e;
         }
-    }
-
-    public final String tableName;
-    private Table table;
-    private boolean memIsStale;
-
-    public Fetch(String tableName) {
-        this.tableName = tableName;
-
+        return null;
     }
 
     @Override
