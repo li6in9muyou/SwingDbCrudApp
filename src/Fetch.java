@@ -43,6 +43,10 @@ public class Fetch implements TableMeta {
         return getTable().columns().get(col).getName();
     }
 
+    private int getColCnt() {
+        return getTable().columns().size();
+    }
+
     private Table getTable() {
         if (table == null || memIsStale) {
             try (Connection con = db.open()) {
@@ -59,7 +63,7 @@ public class Fetch implements TableMeta {
 
     public ArrayList<String[]> fetchAllRows() {
         List<Row> rows = getTable().rows();
-        int colCnt = getTable().columns().size();
+        int colCnt = getColCnt();
 
         ArrayList<String[]> ans = new ArrayList<>(rows.size());
         for (Row row : rows) {
@@ -74,7 +78,7 @@ public class Fetch implements TableMeta {
 
     public ArrayList<Object[]> fetchAllRowsAsObjects() {
         List<Row> rows = getTable().rows();
-        int colCnt = getTable().columns().size();
+        int colCnt = getColCnt();
         ArrayList<Object[]> ans = new ArrayList<>(rows.size());
         for (Row row : rows) {
             Object[] objects = new Object[colCnt];
@@ -91,7 +95,7 @@ public class Fetch implements TableMeta {
             List<Row> rows = con
                     .createQuery("select * from %s where %s".formatted(tableName, predicate))
                     .executeAndFetchTable().rows();
-            int colCnt = getTable().columns().size();
+            int colCnt = getColCnt();
             ArrayList<String[]> ans = new ArrayList<>(rows.size());
             for (Row row : rows) {
                 String[] rowText = new String[colCnt];
@@ -119,7 +123,7 @@ public class Fetch implements TableMeta {
                 con.setRollbackOnException(true);
                 Query insert = con.createQueryWithParams(
                         "insert into %s values ( %s )".formatted(
-                                tableName, makeParamMarkers(getTable().columns().size())
+                                tableName, makeParamMarkers(getColCnt())
                         )
                 );
                 for (String[] row : rows) {
@@ -177,7 +181,7 @@ public class Fetch implements TableMeta {
     public Throwable deleteRows(Object[] victims) {
         try (Connection con = db.beginTransaction()) {
             con.setRollbackOnException(true);
-            String pkColName = getTable().columns().get(getPrimaryKeyColumn()).getName();
+            String pkColName = getColumnName(getPrimaryKeyColumn());
             Query kill = con.createQuery(
                     "delete from %s where %s = :pk".formatted(tableName, pkColName)
             );
