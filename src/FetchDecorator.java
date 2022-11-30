@@ -1,6 +1,7 @@
 import org.sql2o.Sql2oException;
 
 import java.util.ArrayList;
+import java.util.function.Supplier;
 
 public class FetchDecorator {
     final Blackboard blackboard;
@@ -16,39 +17,47 @@ public class FetchDecorator {
     }
 
     public ArrayList<String[]> fetchAllRows() {
-        blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.tableName));
+        return decorateFetchQuery(
+                () -> {
+                    blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.tableName));
+                    ArrayList<String[]> rows = new ArrayList<>(fetch.fetchAllRows());
+                    blackboard.postInfo("查询到%d行".formatted(rows.size()));
+                    return rows;
+                },
+                new ArrayList<>()
+        );
+    }
+
+    private <T> T withFailureReporting(Supplier<T> fn, T defaultValue) {
         try {
-            ArrayList<String[]> rows = new ArrayList<>(fetch.fetchAllRows());
-            blackboard.postInfo("查询到%d行".formatted(rows.size()));
-            return rows;
+            return fn.get();
         } catch (Sql2oException exception) {
             handleError(exception.getCause());
-            return new ArrayList<>();
+            return defaultValue;
         }
     }
 
     public Object[][] fetchAllRowsAsObjects() {
-        blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.tableName));
-        try {
-            ArrayList<Object[]> rows = new ArrayList<>(fetch.fetchAllRowsAsObjects());
-            blackboard.postInfo("查询到%d行".formatted(rows.size()));
-            return rows.toArray(Object[][]::new);
-        } catch (Sql2oException exception) {
-            handleError(exception.getCause());
-            return new Object[0][0];
-        }
+        return withFailureReporting(
+                () -> {
+                    blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.tableName));
+                    ArrayList<Object[]> rows = new ArrayList<>(fetch.fetchAllRowsAsObjects());
+                    blackboard.postInfo("查询到%d行".formatted(rows.size()));
+                    return rows.toArray(Object[][]::new);
+                },
+                new Object[0][0]
+        );
     }
 
     public String[][] fetchPredicate(String predicate) {
-        blackboard.postInfo("使用谓词查询");
-        try {
-            String[][] rows = fetch.fetchPredicate(predicate);
-            blackboard.postInfo("查询到%d行".formatted(rows.length));
-            return rows;
-        } catch (Sql2oException exception) {
-            handleError(exception.getCause());
-            return new String[][]{};
-        }
+        return withFailureReporting(
+                () -> {
+                    String[][] rows = fetch.fetchPredicate(predicate);
+                    blackboard.postInfo("查询到%d行".formatted(rows.length));
+                    return rows;
+                },
+                new String[0][0]
+        );
     }
 
     public void createRows(String[][] rows) {
