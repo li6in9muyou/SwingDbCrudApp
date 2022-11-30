@@ -12,6 +12,24 @@ public class FetchDecorator {
         this.fetch = fetch;
     }
 
+    private <T> T decorateFetchQuery(Supplier<T> fn, T defaultValue) {
+        try {
+            return fn.get();
+        } catch (Sql2oException exception) {
+            handleError(exception.getCause());
+            return defaultValue;
+        }
+    }
+
+    private <T extends Throwable> void decorateUpsert(Supplier<T> fn) {
+        Throwable error = fn.get();
+        handleError(error);
+    }
+
+    public String[] getColumnHeaders() {
+        return fetch.getColumnHeaders();
+    }
+
     public int getPrimaryKeyColumn() {
         return fetch.getPrimaryKeyColumn();
     }
@@ -26,20 +44,6 @@ public class FetchDecorator {
                 },
                 new ArrayList<>()
         );
-    }
-
-    private <T> T decorateFetchQuery(Supplier<T> fn, T defaultValue) {
-        try {
-            return fn.get();
-        } catch (Sql2oException exception) {
-            handleError(exception.getCause());
-            return defaultValue;
-        }
-    }
-
-    private <T extends Throwable> void decorateUpsert(Supplier<T> fn) {
-        Throwable error = fn.get();
-        handleError(error);
     }
 
     public Object[][] fetchAllRowsAsObjects() {
@@ -68,10 +72,6 @@ public class FetchDecorator {
     public void createRows(String[][] rows) {
         blackboard.postInfo("向数据库发送请求……");
         decorateUpsert(() -> fetch.createRows(rows));
-    }
-
-    public String[] getColumnHeaders() {
-        return fetch.getColumnHeaders();
     }
 
     private void handleError(Throwable error) {
