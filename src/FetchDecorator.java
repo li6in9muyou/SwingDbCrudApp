@@ -28,7 +28,7 @@ public class FetchDecorator {
         );
     }
 
-    private <T> T withFailureReporting(Supplier<T> fn, T defaultValue) {
+    private <T> T decorateFetchQuery(Supplier<T> fn, T defaultValue) {
         try {
             return fn.get();
         } catch (Sql2oException exception) {
@@ -38,7 +38,7 @@ public class FetchDecorator {
     }
 
     public Object[][] fetchAllRowsAsObjects() {
-        return withFailureReporting(
+        return decorateFetchQuery(
                 () -> {
                     blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.tableName));
                     ArrayList<Object[]> rows = new ArrayList<>(fetch.fetchAllRowsAsObjects());
@@ -50,7 +50,7 @@ public class FetchDecorator {
     }
 
     public String[][] fetchPredicate(String predicate) {
-        return withFailureReporting(
+        return decorateFetchQuery(
                 () -> {
                     String[][] rows = fetch.fetchPredicate(predicate);
                     blackboard.postInfo("查询到%d行".formatted(rows.length));
