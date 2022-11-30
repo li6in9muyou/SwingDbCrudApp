@@ -37,6 +37,11 @@ public class FetchDecorator {
         }
     }
 
+    private <T extends Throwable> void decorateUpsert(Supplier<T> fn) {
+        Throwable error = fn.get();
+        handleError(error);
+    }
+
     public Object[][] fetchAllRowsAsObjects() {
         return decorateFetchQuery(
                 () -> {
@@ -62,8 +67,7 @@ public class FetchDecorator {
 
     public void createRows(String[][] rows) {
         blackboard.postInfo("向数据库发送请求……");
-        Throwable error = fetch.createRows(rows);
-        handleError(error);
+        decorateUpsert(() -> fetch.createRows(rows));
     }
 
     public String[] getColumnHeaders() {
@@ -86,8 +90,7 @@ public class FetchDecorator {
 
     public void deleteRows(Object[] victims) {
         blackboard.postError("即将删除行");
-        Throwable error = fetch.deleteRows(victims);
-        handleError(error);
+        decorateUpsert(() -> fetch.deleteRows(victims));
     }
 
     public Patch createPatch(Object pk, int modifiedCol, Object newVal) {
@@ -96,7 +99,6 @@ public class FetchDecorator {
 
     public void commitPatches(Patch[] patches) {
         blackboard.postInfo("提交暂存区中的更改");
-        Throwable error = fetch.updateRows(patches);
-        handleError(error);
+        decorateUpsert(() -> fetch.updateRows(patches));
     }
 }
