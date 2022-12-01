@@ -14,7 +14,7 @@ import java.util.List;
 
 public class Fetch implements TableMeta {
     public final String tableName;
-    private Sql2o db;
+    private Sql2o sql2o;
     private Table table;
     private boolean memIsStale;
 
@@ -25,7 +25,7 @@ public class Fetch implements TableMeta {
     Throwable initConnection() {
         try {
             Class.forName("com.ibm.db2.jcc.DB2Driver");
-            db = new Sql2o(
+            sql2o = new Sql2o(
                     "jdbc:db2://192.168.245.128:50000/sample:" +
                             "retrieveMessagesFromServerOnGetMessage=true;",
                     "student",
@@ -38,18 +38,18 @@ public class Fetch implements TableMeta {
     }
 
     @Override
-    public String getColumnName(int col) {
-        return getTable().columns().get(col).getName();
+    public String getColumnName(int columnIndex) {
+        return getTable().columns().get(columnIndex).getName();
     }
 
-    private int getColCnt() {
+    private int getColumnCount() {
         return getTable().columns().size();
     }
 
     private Table getTable() {
         if (table == null || memIsStale) {
-            try (Connection con = db.open()) {
-                table = con
+            try (Connection connection = sql2o.open()) {
+                table = connection
                         .createQuery("select * from %s order by 1".formatted(tableName))
                         .executeAndFetchTable();
                 memIsStale = false;
@@ -62,7 +62,7 @@ public class Fetch implements TableMeta {
 
     public ArrayList<String[]> fetchAllRows() {
         List<Row> rows = getTable().rows();
-        int colCnt = getColCnt();
+        int colCnt = getColumnCount();
 
         ArrayList<String[]> ans = new ArrayList<>(rows.size());
         for (Row row : rows) {
@@ -77,11 +77,11 @@ public class Fetch implements TableMeta {
 
     public ArrayList<Object[]> fetchAllRowsAsObjects() {
         List<Row> rows = getTable().rows();
-        int colCnt = getColCnt();
         ArrayList<Object[]> ans = new ArrayList<>(rows.size());
         for (Row row : rows) {
-            Object[] objects = new Object[colCnt];
-            for (int i = 0; i < colCnt; i++) {
+            int c = getColumnCount();
+            Object[] objects = new Object[c];
+            for (int i = 0; i < c; i++) {
                 objects[i] = row.getObject(i);
             }
             ans.add(objects);
@@ -90,11 +90,11 @@ public class Fetch implements TableMeta {
     }
 
     public String[][] fetchPredicate(String predicate) {
-        try (Connection con = db.open()) {
-            List<Row> rows = con
+        try (Connection connection = sql2o.open()) {
+            List<Row> rows = connection
                     .createQuery("select * from %s where %s".formatted(tableName, predicate))
                     .executeAndFetchTable().rows();
-            int colCnt = getColCnt();
+            int colCnt = getColumnCount();
             ArrayList<String[]> ans = new ArrayList<>(rows.size());
             for (Row row : rows) {
                 String[] rowText = new String[colCnt];
@@ -118,11 +118,11 @@ public class Fetch implements TableMeta {
 
     public Throwable createRows(String[][] rows) {
         try {
-            try (Connection con = db.beginTransaction()) {
-                con.setRollbackOnException(true);
-                Query insert = con.createQueryWithParams(
+            try (Connection connection = sql2o.beginTransaction()) {
+                connection.setRollbackOnException(true);
+                Query insert = connection.createQueryWithParams(
                         "insert into %s values ( %s )".formatted(
-                                tableName, makeParamMarkers(getColCnt())
+                                tableName, makeParamMarkers(getColumnCount())
                         )
                 );
                 for (String[] row : rows) {
@@ -144,7 +144,7 @@ public class Fetch implements TableMeta {
                     ).addToBatch();
                 }
                 insert.executeBatch();
-                con.commit();
+                connection.commit();
                 memIsStale = true;
             }
             return null;
@@ -157,8 +157,8 @@ public class Fetch implements TableMeta {
         Throwable unwrapped = error.getCause();
         if (unwrapped instanceof DB2Diagnosable) {
             DB2Sqlca sqlca = ((DB2Diagnosable) unwrapped).getSqlca();
-            try (Connection con = db.open()) {
-                return con.createQueryWithParams(
+            try (Connection connection = sql2o.open()) {
+                return connection.createQueryWithParams(
                         "values (sysproc.SQLERRM(:p1, :p2, ';', 'zh_CN', 1))",
                         "SQL" + Math.abs(sqlca.getSqlCode()), sqlca.getSqlErrmc()
                 ).executeScalar(String.class);
@@ -178,10 +178,10 @@ public class Fetch implements TableMeta {
     }
 
     public Throwable deleteRows(Object[] victims) {
-        try (Connection con = db.beginTransaction()) {
-            con.setRollbackOnException(true);
+        try (Connection connection = sql2o.beginTransaction()) {
+            connection.setRollbackOnException(true);
             String pkColName = getColumnName(getPrimaryKeyColumn());
-            Query kill = con.createQuery(
+            Query kill = connection.createQuery(
                     "delete from %s where %s = :pk".formatted(tableName, pkColName)
             );
             for (Object victim : victims) {
@@ -189,7 +189,7 @@ public class Fetch implements TableMeta {
             }
             try {
                 kill.executeBatch();
-                con.commit();
+                connection.commit();
             } catch (Sql2oException e) {
                 return ((SQLException) e.getCause()).getNextException();
             }
@@ -199,8 +199,8 @@ public class Fetch implements TableMeta {
     }
 
     public Throwable updateRows(Patch[] patches) {
-        try (Connection con = db.beginTransaction()) {
-            con.setRollbackOnException(true);
+        try (Connection connection = sql2o.beginTransaction()) {
+            connection.setRollbackOnException(true);
             for (Patch patch : patches) {
                 String withModifiedCol = "UPDATE %s t SET t.%s = :newVal WHERE t.%s LIKE :pk"
                         .formatted(
@@ -209,15 +209,15 @@ public class Fetch implements TableMeta {
                                 getColumnName(getPrimaryKeyColumn())
                         );
                 try {
-                    con.createQuery(withModifiedCol)
-                            .addParameter("pk", patch.getPk())
+                    connection.createQuery(withModifiedCol)
+                            .addParameter("pk", patch.getPrimaryKeyValue())
                             .addParameter("newVal", patch.getNewValue())
                             .executeUpdate();
                 } catch (Sql2oException e) {
                     return e.getCause();
                 }
             }
-            con.commit();
+            connection.commit();
         }
         memIsStale = true;
         return null;
