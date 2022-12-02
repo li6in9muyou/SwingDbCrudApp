@@ -153,18 +153,17 @@ public class Fetch implements TableMeta {
         }
     }
 
+    public boolean isDB2Error(Throwable error) {
+        return error.getCause() instanceof DB2Diagnosable || error instanceof DB2Diagnosable;
+    }
+
     public String fetchErrorMessage(Throwable error) {
-        Throwable unwrapped = error.getCause();
-        if (unwrapped instanceof DB2Diagnosable) {
-            DB2Sqlca sqlca = ((DB2Diagnosable) unwrapped).getSqlca();
-            try (Connection con = db.open()) {
-                return con.createQueryWithParams(
-                        "values (sysproc.SQLERRM(:p1, :p2, ';', 'zh_CN', 1))",
-                        "SQL" + Math.abs(sqlca.getSqlCode()), sqlca.getSqlErrmc()
-                ).executeScalar(String.class);
-            }
-        } else {
-            return error.getMessage();
+        DB2Sqlca sqlca = ((DB2Diagnosable) error).getSqlca();
+        try (Connection con = db.open()) {
+            return con.createQueryWithParams(
+                    "values (sysproc.SQLERRM(:p1, :p2, ';', 'zh_CN', 1))",
+                    "SQL" + Math.abs(sqlca.getSqlCode()), sqlca.getSqlErrmc()
+            ).executeScalar(String.class);
         }
     }
 

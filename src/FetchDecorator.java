@@ -78,10 +78,17 @@ public class FetchDecorator {
         if (error != null) {
             System.out.println("operation failed");
             System.out.println("error.getMessage() = " + error.getMessage());
-            String errorMessage = fetch.fetchErrorMessage(error);
-            System.out.println("fetch.fetchErrorMessage(error) = " + errorMessage);
-            blackboard.postError("失败");
-            blackboard.postError(errorMessage);
+            if (fetch.isDB2Error(error)) {
+                String errorMessage = fetch.fetchErrorMessage(error);
+                blackboard.postError("失败，数据库报告错误");
+                System.out.println("fetch.fetchErrorMessage(error) = " + errorMessage);
+                blackboard.postError(errorMessage);
+            } else {
+                String errorMessage = error.toString();
+                blackboard.postError("失败，本地程序错误");
+                System.out.println("fetch.fetchErrorMessage(error) = " + errorMessage);
+                blackboard.postError(errorMessage);
+            }
         } else {
             blackboard.postInfo("成功");
             System.out.println("operation is successful");
