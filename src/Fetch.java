@@ -27,7 +27,7 @@ public class Fetch implements DbClient, HelpfulDbClient {
         return tableName;
     }
 
-    public Throwable initConnection() {
+    public Exception initConnection() {
         try {
             Class.forName("com.ibm.db2.jcc.DB2Driver");
             sql2o = new Sql2o(
@@ -125,7 +125,7 @@ public class Fetch implements DbClient, HelpfulDbClient {
     }
 
     @Override
-    public Throwable createRows(String[][] rows) {
+    public Exception createRows(String[][] rows) {
         try {
             try (Connection connection = sql2o.beginTransaction()) {
                 connection.setRollbackOnException(true);
@@ -158,7 +158,7 @@ public class Fetch implements DbClient, HelpfulDbClient {
             }
             return null;
         } catch (Sql2oException e) {
-            return e.getCause();
+            return (Exception) e.getCause();
         } catch (Exception exception) {
             return exception;
         }
@@ -192,7 +192,7 @@ public class Fetch implements DbClient, HelpfulDbClient {
     }
 
     @Override
-    public Throwable deleteRows(Object[] victims) {
+    public Exception deleteRows(Object[] victims) {
         try (Connection connection = sql2o.beginTransaction()) {
             connection.setRollbackOnException(true);
             String pkColName = getColumnName(getPrimaryKeyColumn());
@@ -206,7 +206,7 @@ public class Fetch implements DbClient, HelpfulDbClient {
                 kill.executeBatch();
                 connection.commit();
             } catch (Sql2oException e) {
-                return e.getCause();
+                return (Exception) e.getCause();
             } catch (Exception e) {
                 return e;
             }
@@ -216,7 +216,7 @@ public class Fetch implements DbClient, HelpfulDbClient {
     }
 
     @Override
-    public Throwable updateRows(Patch[] patches) {
+    public Exception updateRows(Patch[] patches) {
         try (Connection connection = sql2o.beginTransaction()) {
             connection.setRollbackOnException(true);
             for (Patch patch : patches) {
@@ -232,7 +232,7 @@ public class Fetch implements DbClient, HelpfulDbClient {
                             .addParameter("newVal", patch.getNewValue())
                             .executeUpdate();
                 } catch (Sql2oException e) {
-                    return e.getCause();
+                    return (Exception) e.getCause();
                 } catch (Exception exception) {
                     return exception;
                 }

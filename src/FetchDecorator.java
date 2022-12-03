@@ -71,7 +71,7 @@ public class FetchDecorator {
     }
 
     public boolean initConnection() {
-        Throwable error = fetch.initConnection();
+        Exception error = fetch.initConnection();
         errorReporter.reportError(error);
         return error != null;
     }

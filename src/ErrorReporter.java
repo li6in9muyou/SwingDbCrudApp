@@ -19,7 +19,7 @@ public class ErrorReporter {
         }
     }
 
-    void reportError(Throwable error) {
+    void reportError(Exception error) {
         if (error != null) {
             System.out.println("operation failed");
             System.out.println("error.getMessage() = " + error.getMessage());
