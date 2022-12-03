@@ -159,7 +159,7 @@ public class Fetch implements TableMeta {
 
     public String fetchErrorMessage(Throwable error) {
         DB2Sqlca sqlca = ((DB2Diagnosable) error).getSqlca();
-        try (Connection con = db.open()) {
+        try (Connection con = sql2o.open()) {
             return con.createQueryWithParams(
                     "values (sysproc.SQLERRM(:p1, :p2, ';', 'zh_CN', 1))",
                     "SQL" + Math.abs(sqlca.getSqlCode()), sqlca.getSqlErrmc()
