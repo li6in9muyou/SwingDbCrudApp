@@ -55,11 +55,11 @@ public class FetchDecorator {
     }
 
     public void createRows(String[][] rows) {
-        errorReporter.decorateUpsert(() -> fetch.createRows(rows));
+        errorReporter.handleError(fetch.createRows(rows));
     }
 
     public void deleteRows(Object[] victims) {
-        errorReporter.decorateUpsert(() -> fetch.deleteRows(victims));
+        errorReporter.handleError(fetch.deleteRows(victims));
     }
 
     public Patch createPatch(Object pk, int modifiedCol, Object newVal) {
@@ -67,7 +67,7 @@ public class FetchDecorator {
     }
 
     public void commitPatches(Patch[] patches) {
-        errorReporter.decorateUpsert(() -> fetch.updateRows(patches));
+        errorReporter.handleError(fetch.updateRows(patches));
     }
 
     public boolean initConnection() {

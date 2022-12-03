@@ -21,11 +21,6 @@ public class ErrorReporter {
         }
     }
 
-    public <T extends Throwable> void decorateUpsert(Supplier<T> fn) {
-        Throwable error = fn.get();
-        handleError(error);
-    }
-
     void handleError(Throwable error) {
         if (error != null) {
             System.out.println("operation failed");
