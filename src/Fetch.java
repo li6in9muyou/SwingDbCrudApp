@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Fetch implements DbClient {
+public class Fetch implements DbClient, HelpfulDbClient {
     public final String tableName;
     private Sql2o sql2o;
     private Table table;
