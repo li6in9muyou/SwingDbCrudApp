@@ -157,6 +157,8 @@ public class Fetch implements DbClient, HelpfulDbClient {
                 memIsStale = true;
             }
             return null;
+        } catch (Sql2oException e) {
+            return e.getCause();
         } catch (Exception exception) {
             return exception;
         }
@@ -204,7 +206,9 @@ public class Fetch implements DbClient, HelpfulDbClient {
                 kill.executeBatch();
                 connection.commit();
             } catch (Sql2oException e) {
-                return ((SQLException) e.getCause()).getNextException();
+                return e.getCause();
+            } catch (Exception e) {
+                return e;
             }
         }
         memIsStale = true;
@@ -229,6 +233,8 @@ public class Fetch implements DbClient, HelpfulDbClient {
                             .executeUpdate();
                 } catch (Sql2oException e) {
                     return e.getCause();
+                } catch (Exception exception) {
+                    return exception;
                 }
             }
             connection.commit();

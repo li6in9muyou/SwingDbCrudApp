@@ -1,5 +1,3 @@
-import org.sql2o.Sql2oException;
-
 import java.sql.SQLException;
 import java.util.function.Supplier;
 
@@ -15,8 +13,8 @@ public class ErrorReporter {
     <T> T catchQuery(Supplier<T> fn, T defaultValue) {
         try {
             return fn.get();
-        } catch (Sql2oException exception) {
-            reportError(exception.getCause());
+        } catch (Exception exception) {
+            reportError(exception);
             return defaultValue;
         }
     }
