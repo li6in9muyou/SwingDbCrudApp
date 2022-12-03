@@ -1,13 +1,14 @@
 import org.sql2o.Sql2oException;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.function.Supplier;
 
 public class FetchDecorator {
     final Blackboard blackboard;
-    Fetch fetch;
+    DbClient fetch;
 
-    public FetchDecorator(Blackboard blackboard, Fetch fetch) {
+    public FetchDecorator(Blackboard blackboard, DbClient fetch) {
         this.blackboard = blackboard;
         this.fetch = fetch;
     }
@@ -37,7 +38,7 @@ public class FetchDecorator {
     public ArrayList<String[]> fetchAllRows() {
         return decorateFetchQuery(
                 () -> {
-                    blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.tableName));
+                    blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.getCurrentTableName()));
                     ArrayList<String[]> rows = new ArrayList<>(fetch.fetchAllRows());
                     blackboard.postInfo("查询到%d行".formatted(rows.size()));
                     return rows;
@@ -49,7 +50,7 @@ public class FetchDecorator {
     public Object[][] fetchAllRowsAsObjects() {
         return decorateFetchQuery(
                 () -> {
-                    blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.tableName));
+                    blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.getCurrentTableName()));
                     ArrayList<Object[]> rows = new ArrayList<>(fetch.fetchAllRowsAsObjects());
                     blackboard.postInfo("查询到%d行".formatted(rows.size()));
                     return rows.toArray(Object[][]::new);
@@ -78,13 +79,13 @@ public class FetchDecorator {
         if (error != null) {
             System.out.println("operation failed");
             System.out.println("error.getMessage() = " + error.getMessage());
-            if (fetch.isDB2Error(error)) {
-                String errorMessage = fetch.fetchErrorMessage(error);
+            String errorMessage = fetch.fetchErrorMessage((SQLException) error);
+            if (!errorMessage.isEmpty()) {
                 blackboard.postError("失败，数据库报告错误");
                 System.out.println("fetch.fetchErrorMessage(error) = " + errorMessage);
                 blackboard.postError(errorMessage);
             } else {
-                String errorMessage = error.toString();
+                errorMessage = error.toString();
                 blackboard.postError("失败，本地程序错误");
                 System.out.println("fetch.fetchErrorMessage(error) = " + errorMessage);
                 blackboard.postError(errorMessage);

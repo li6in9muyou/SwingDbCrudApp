@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Fetch implements TableMeta {
+public class Fetch implements DbClient {
     public final String tableName;
     private Sql2o sql2o;
     private Table table;
@@ -22,7 +22,12 @@ public class Fetch implements TableMeta {
         this.tableName = tableName;
     }
 
-    Throwable initConnection() {
+    @Override
+    public String getCurrentTableName() {
+        return tableName;
+    }
+
+    public Throwable initConnection() {
         try {
             Class.forName("com.ibm.db2.jcc.DB2Driver");
             sql2o = new Sql2o(
@@ -60,6 +65,7 @@ public class Fetch implements TableMeta {
         }
     }
 
+    @Override
     public ArrayList<String[]> fetchAllRows() {
         List<Row> rows = getTable().rows();
         int colCnt = getColumnCount();
@@ -75,6 +81,7 @@ public class Fetch implements TableMeta {
         return ans;
     }
 
+    @Override
     public ArrayList<Object[]> fetchAllRowsAsObjects() {
         List<Row> rows = getTable().rows();
         ArrayList<Object[]> ans = new ArrayList<>(rows.size());
@@ -89,6 +96,7 @@ public class Fetch implements TableMeta {
         return ans;
     }
 
+    @Override
     public String[][] fetchPredicate(String predicate) {
         try (Connection connection = sql2o.open()) {
             List<Row> rows = connection
@@ -116,6 +124,7 @@ public class Fetch implements TableMeta {
         return sb.toString();
     }
 
+    @Override
     public Throwable createRows(String[][] rows) {
         try {
             try (Connection connection = sql2o.beginTransaction()) {
@@ -153,11 +162,15 @@ public class Fetch implements TableMeta {
         }
     }
 
-    public boolean isDB2Error(Throwable error) {
+    private boolean isDB2Error(Throwable error) {
         return error.getCause() instanceof DB2Diagnosable || error instanceof DB2Diagnosable;
     }
 
-    public String fetchErrorMessage(Throwable error) {
+    @Override
+    public String fetchErrorMessage(SQLException error) {
+        if (!isDB2Error(error)) {
+            return "";
+        }
         DB2Sqlca sqlca = ((DB2Diagnosable) error).getSqlca();
         try (Connection con = sql2o.open()) {
             return con.createQueryWithParams(
@@ -176,6 +189,7 @@ public class Fetch implements TableMeta {
         return 0;
     }
 
+    @Override
     public Throwable deleteRows(Object[] victims) {
         try (Connection connection = sql2o.beginTransaction()) {
             connection.setRollbackOnException(true);
@@ -197,6 +211,7 @@ public class Fetch implements TableMeta {
         return null;
     }
 
+    @Override
     public Throwable updateRows(Patch[] patches) {
         try (Connection connection = sql2o.beginTransaction()) {
             connection.setRollbackOnException(true);
