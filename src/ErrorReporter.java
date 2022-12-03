@@ -12,16 +12,16 @@ public class ErrorReporter {
         this.helpful = helpful;
     }
 
-    <T> T decorateFetchQuery(Supplier<T> fn, T defaultValue) {
+    <T> T catchAny(Supplier<T> fn, T defaultValue) {
         try {
             return fn.get();
         } catch (Sql2oException exception) {
-            handleError(exception.getCause());
+            reportError(exception.getCause());
             return defaultValue;
         }
     }
 
-    void handleError(Throwable error) {
+    void reportError(Throwable error) {
         if (error != null) {
             System.out.println("operation failed");
             System.out.println("error.getMessage() = " + error.getMessage());

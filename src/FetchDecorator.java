@@ -20,7 +20,7 @@ public class FetchDecorator {
     }
 
     public ArrayList<String[]> fetchAllRows() {
-        return errorReporter.decorateFetchQuery(
+        return errorReporter.catchAny(
                 () -> {
                     blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.getCurrentTableName()));
                     ArrayList<String[]> rows = new ArrayList<>(fetch.fetchAllRows());
@@ -32,7 +32,7 @@ public class FetchDecorator {
     }
 
     public Object[][] fetchAllRowsAsObjects() {
-        return errorReporter.decorateFetchQuery(
+        return errorReporter.catchAny(
                 () -> {
                     blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.getCurrentTableName()));
                     ArrayList<Object[]> rows = new ArrayList<>(fetch.fetchAllRowsAsObjects());
@@ -44,7 +44,7 @@ public class FetchDecorator {
     }
 
     public String[][] fetchPredicate(String predicate) {
-        return errorReporter.decorateFetchQuery(
+        return errorReporter.catchAny(
                 () -> {
                     String[][] rows = fetch.fetchPredicate(predicate);
                     blackboard.postInfo("查询到%d行".formatted(rows.length));
@@ -55,11 +55,11 @@ public class FetchDecorator {
     }
 
     public void createRows(String[][] rows) {
-        errorReporter.handleError(fetch.createRows(rows));
+        errorReporter.reportError(fetch.createRows(rows));
     }
 
     public void deleteRows(Object[] victims) {
-        errorReporter.handleError(fetch.deleteRows(victims));
+        errorReporter.reportError(fetch.deleteRows(victims));
     }
 
     public Patch createPatch(Object pk, int modifiedCol, Object newVal) {
@@ -67,12 +67,12 @@ public class FetchDecorator {
     }
 
     public void commitPatches(Patch[] patches) {
-        errorReporter.handleError(fetch.updateRows(patches));
+        errorReporter.reportError(fetch.updateRows(patches));
     }
 
     public boolean initConnection() {
         Throwable error = fetch.initConnection();
-        errorReporter.handleError(error);
+        errorReporter.reportError(error);
         return error != null;
     }
 }
