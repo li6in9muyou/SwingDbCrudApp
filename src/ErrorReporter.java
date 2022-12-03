@@ -1,3 +1,4 @@
+import java.sql.BatchUpdateException;
 import java.sql.SQLException;
 import java.util.function.Supplier;
 
@@ -19,24 +20,41 @@ public class ErrorReporter {
         }
     }
 
-    void reportError(Exception error) {
-        if (error != null) {
-            System.out.println("operation failed");
-            System.out.println("error.getMessage() = " + error.getMessage());
-            String errorMessage = helpful.fetchErrorMessage((SQLException) error);
-            if (!errorMessage.isEmpty()) {
-                blackboard.postError("失败，数据库报告错误");
-                System.out.println("fetch.fetchErrorMessage(error) = " + errorMessage);
-                blackboard.postError(errorMessage);
-            } else {
-                errorMessage = error.toString();
-                blackboard.postError("失败，本地程序错误");
-                System.out.println("fetch.fetchErrorMessage(error) = " + errorMessage);
-                blackboard.postError(errorMessage);
+    private void reportBatchException(BatchUpdateException ignoredBatchWrapper) {
+        SQLException e = ignoredBatchWrapper;
+        while (true) {
+            e = e.getNextException();
+            if (e == null) {
+                break;
             }
-        } else {
+            blackboard.postError(e.getMessage());
+            reportError(e);
+        }
+    }
+
+    private void reportJavaException(Exception error) {
+        String errorMessage = error.toString();
+        blackboard.postError("失败，本地程序错误");
+        blackboard.postError(errorMessage);
+    }
+
+    private void reportSQLException(SQLException error) {
+        String errorMessage = helpful.fetchErrorMessage(error);
+        blackboard.postError("失败，数据库报告错误");
+        blackboard.postError(errorMessage);
+    }
+
+    void reportError(Exception error) {
+        if (error == null) {
             blackboard.postInfo("成功");
-            System.out.println("operation is successful");
+        } else {
+            if (error instanceof BatchUpdateException e) {
+                reportBatchException(e);
+            } else if (error instanceof SQLException e) {
+                reportSQLException(e);
+            } else {
+                reportJavaException(error);
+            }
         }
     }
 }
