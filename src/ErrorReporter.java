@@ -12,7 +12,7 @@ public class ErrorReporter {
         this.helpful = helpful;
     }
 
-    <T> T catchAny(Supplier<T> fn, T defaultValue) {
+    <T> T catchQuery(Supplier<T> fn, T defaultValue) {
         try {
             return fn.get();
         } catch (Sql2oException exception) {

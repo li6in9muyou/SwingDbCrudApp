@@ -20,7 +20,7 @@ public class FetchDecorator {
     }
 
     public ArrayList<String[]> fetchAllRows() {
-        return errorReporter.catchAny(
+        return errorReporter.catchQuery(
                 () -> {
                     blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.getCurrentTableName()));
                     ArrayList<String[]> rows = new ArrayList<>(fetch.fetchAllRows());
@@ -32,7 +32,7 @@ public class FetchDecorator {
     }
 
     public Object[][] fetchAllRowsAsObjects() {
-        return errorReporter.catchAny(
+        return errorReporter.catchQuery(
                 () -> {
                     blackboard.postInfo("查询 %s 表的所有行……".formatted(fetch.getCurrentTableName()));
                     ArrayList<Object[]> rows = new ArrayList<>(fetch.fetchAllRowsAsObjects());
@@ -44,7 +44,7 @@ public class FetchDecorator {
     }
 
     public String[][] fetchPredicate(String predicate) {
-        return errorReporter.catchAny(
+        return errorReporter.catchQuery(
                 () -> {
                     String[][] rows = fetch.fetchPredicate(predicate);
                     blackboard.postInfo("查询到%d行".formatted(rows.length));
