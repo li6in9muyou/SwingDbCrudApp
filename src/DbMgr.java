@@ -3,7 +3,10 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.Vector;
 import java.util.stream.Collectors;
@@ -18,6 +21,7 @@ public class DbMgr {
     private final TableColumnAdjuster adjuster;
     private final DefaultTableModel dataModel;
     private final Vector<Patch> StagedPatches = new Vector<>();
+    private final HashMap<String, byte[]> loadedImages = new HashMap<>();
     JPanel Show;
     private JTable QueryResultTable;
     private JButton StageSelectedRowsButton;
@@ -62,6 +66,7 @@ public class DbMgr {
         fetchPreview.addActionListener(this::handleFetchSubQueryPreview);
         DeleteRowButton.addActionListener(this::handleDeleteRow);
         FilterButton.addActionListener(this::handleFetchFilteredRows);
+        HelpButton.addActionListener(this::handleChooseOneImage);
 
         fetch.initConnection();
         subQueryPredicate.setText("photo_format='gif'");
@@ -86,6 +91,19 @@ public class DbMgr {
         frame.pack();
         frame.setVisible(true);
         dbMgr.setUpConnectionOrExit();
+    }
+
+    private void handleChooseOneImage(ActionEvent actionEvent) {
+        JFileChooser jFileChooser = new JFileChooser();
+        jFileChooser.setMultiSelectionEnabled(false);
+        if (jFileChooser.showOpenDialog(Show) == JFileChooser.APPROVE_OPTION) {
+            try {
+                byte[] img = Files.readAllBytes(jFileChooser.getSelectedFile().toPath());
+                loadedImages.put(img.toString(), img);
+                singleLineInsert.append(img.toString());
+            } catch (IOException ignored) {
+            }
+        }
     }
 
     private void setUpConnectionOrExit() {
@@ -227,8 +245,12 @@ public class DbMgr {
 
     private void handleSingleInsert() {
         String text = singleLineInsert.getText();
-        String[] fields = text.split(",");
-        fetch.createRows(new String[][]{fields});
+        Object[] fields = new Object[3];
+        String[] ss = text.split(",");
+        fields[0] = ss[0];
+        fields[1] = ss[1];
+        fields[2] = loadedImages.get(ss[2]);
+        fetch.createRows(new Object[][]{fields});
     }
 
     private void handleManyLineInsert() {
