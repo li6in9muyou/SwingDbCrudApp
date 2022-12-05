@@ -99,7 +99,9 @@ public class DbMgr {
         if (jFileChooser.showOpenDialog(Show) == JFileChooser.APPROVE_OPTION) {
             try {
                 byte[] img = Files.readAllBytes(jFileChooser.getSelectedFile().toPath());
+                //noinspection ImplicitArrayToString
                 loadedImages.put(img.toString(), img);
+                //noinspection ImplicitArrayToString
                 singleLineInsert.append(img.toString());
             } catch (IOException ignored) {
             }
