@@ -29,7 +29,7 @@ public class DbMgr {
     private JButton HelpButton;
     private JButton CancelOperationButton;
     private JButton CommitChangeButton;
-    private JButton RollBackButton;
+    private JButton LoadImageButton;
     private JButton LoadMoreIntoMemoryButton;
     private JButton FilterButton;
     private JCheckBox ToggleAutoCommitCheckBox;
@@ -66,7 +66,7 @@ public class DbMgr {
         fetchPreview.addActionListener(this::handleFetchSubQueryPreview);
         DeleteRowButton.addActionListener(this::handleDeleteRow);
         FilterButton.addActionListener(this::handleFetchFilteredRows);
-        HelpButton.addActionListener(this::handleChooseOneImage);
+        LoadImageButton.addActionListener(this::handleChooseOneImage);
 
         fetch.initConnection();
         subQueryPredicate.setText("photo_format='gif'");
