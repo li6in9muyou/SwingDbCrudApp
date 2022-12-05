@@ -179,9 +179,10 @@ public class DbMgr {
     }
 
     private void handleFetchSubQueryPreview(ActionEvent actionEvent) {
-        String[][] rows = fetch.fetchPredicate(subQueryPredicate.getText());
+        Object[][] rows = fetch.fetchPredicate(subQueryPredicate.getText());
         subQueryInsert.setText(
                 Arrays.stream(rows)
+                        .map(Object::toString)
                         .map(row -> String.join(",", row))
                         .collect(Collectors.joining("\n"))
         );
