@@ -31,8 +31,9 @@ public class Fetch implements DbClient, HelpfulDbClient {
         try {
             Class.forName("com.ibm.db2.jcc.DB2Driver");
             sql2o = new Sql2o(
-                    "jdbc:db2://192.168.245.128:50000/sample:" +
-                            "retrieveMessagesFromServerOnGetMessage=true;",
+                    "jdbc:db2://192.168.245.128:50000/sample:"
+                            + "retrieveMessagesFromServerOnGetMessage=true;"
+                            + "progressiveStreaming=2;", // 2 means NO
                     "student",
                     "student"
             );
@@ -106,9 +107,9 @@ public class Fetch implements DbClient, HelpfulDbClient {
             ArrayList<Object[]> ans = new ArrayList<>(rows.size());
             for (Row row : rows) {
                 Object[] thisRow = new Object[colCnt];
-                for (int i = 0; i < colCnt; i++) {
-                    thisRow[i] = row.getObject(i);
-                }
+                thisRow[0] = row.getObject(0);
+                thisRow[1] = row.getObject(1);
+                thisRow[2] = row.getObject(2, byte[].class);
                 ans.add(thisRow);
             }
             return ans.toArray(Object[][]::new);
