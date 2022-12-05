@@ -61,6 +61,11 @@ public class DbMgr {
         fetchPreview.addActionListener(this::handleFetchSubQueryPreview);
         DeleteRowButton.addActionListener(this::handleDeleteRow);
         FilterButton.addActionListener(this::handleFetchFilteredRows);
+
+        fetch.initConnection();
+        subQueryPredicate.setText("photo_format='gif'");
+        FilterButton.doClick();
+        adjuster.adjustColumns();
     }
 
     public static void main(String[] args) {
