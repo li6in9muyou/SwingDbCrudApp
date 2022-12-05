@@ -23,6 +23,16 @@ public class HighlightNullAndEmptyString extends DefaultTableCellRenderer implem
             }
             setOpaque(true);
             return this;
+        } else if (value instanceof byte[]) {
+            JLabel base = (JLabel) defaultRenderer.getTableCellRendererComponent(
+                    table, "", isSelected, hasFocus, row, column
+            );
+            Image image = new ImageIcon((byte[]) value).getImage();
+            float ar = (float) image.getWidth(null) / (float) image.getHeight(null);
+            base.setIcon(new ImageIcon(
+                    image.getScaledInstance((int) (300 * ar), 300, Image.SCALE_DEFAULT)
+            ));
+            return base;
         } else {
             return defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }

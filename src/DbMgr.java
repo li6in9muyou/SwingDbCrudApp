@@ -51,6 +51,7 @@ public class DbMgr {
                 Object.class,
                 new HighlightNullAndEmptyString(QueryResultTable.getDefaultRenderer(Objects.class))
         );
+        QueryResultTable.setRowHeight(300);
         RowCountLabel.setText("还没有载入数据");
         dataModel.addTableModelListener(this::updateRowCountLabel);
         dataModel.addTableModelListener(this::handleStageOneCell);
