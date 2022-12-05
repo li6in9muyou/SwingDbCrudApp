@@ -126,7 +126,7 @@ public class Fetch implements DbClient, HelpfulDbClient {
     }
 
     @Override
-    public Exception createRows(String[][] rows) {
+    public Exception createRows(Object[][] rows) {
         try {
             try (Connection connection = sql2o.beginTransaction()) {
                 connection.setRollbackOnException(true);
@@ -135,7 +135,7 @@ public class Fetch implements DbClient, HelpfulDbClient {
                                 tableName, makeParamMarkers(getColumnCount())
                         )
                 );
-                for (String[] row : rows) {
+                for (Object[] row : rows) {
                     insert.withParams(
                             row[0],
                             row[1],

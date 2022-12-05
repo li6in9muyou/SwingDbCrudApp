@@ -54,7 +54,7 @@ public class FetchDecorator {
         );
     }
 
-    public void createRows(String[][] rows) {
+    public void createRows(Object[][] rows) {
         errorReporter.reportError(fetch.createRows(rows));
     }
 

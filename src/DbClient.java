@@ -7,7 +7,7 @@ public interface DbClient extends TableMeta, HelpfulDbClient {
 
     Object[][] fetchPredicate(String predicate);
 
-    Exception createRows(String[][] rows);
+    Exception createRows(Object[][] rows);
 
     Exception deleteRows(Object[] victims);
 
