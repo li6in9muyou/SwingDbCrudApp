@@ -139,18 +139,7 @@ public class Fetch implements DbClient, HelpfulDbClient {
                     insert.withParams(
                             row[0],
                             row[1],
-                            row[2],
-                            row[3],
-                            row[4],
-                            row[5],
-                            row[6],
-                            row[7],
-                            Integer.parseInt(row[8]),
-                            row[9],
-                            row[10],
-                            Double.parseDouble(row[11]),
-                            Double.parseDouble(row[12]),
-                            Double.parseDouble(row[13])
+                            row[2]
                     ).addToBatch();
                 }
                 insert.executeBatch();
