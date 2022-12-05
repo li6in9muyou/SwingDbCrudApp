@@ -43,7 +43,7 @@ public class DbMgr {
 
     public DbMgr() {
         blackboard = new Blackboard(notifications);
-        fetch = new FetchDecorator(blackboard, new Fetch("employee"));
+        fetch = new FetchDecorator(blackboard, new Fetch("emp_photo"));
         adjuster = getColumnWidthAdjuster();
         dataModel = new DefaultTableModel();
         QueryResultTable.setModel(dataModel);
