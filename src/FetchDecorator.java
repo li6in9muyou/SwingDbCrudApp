@@ -43,14 +43,14 @@ public class FetchDecorator {
         );
     }
 
-    public String[][] fetchPredicate(String predicate) {
+    public Object[][] fetchPredicate(String predicate) {
         return errorReporter.catchQuery(
                 () -> {
-                    String[][] rows = fetch.fetchPredicate(predicate);
+                    Object[][] rows = fetch.fetchPredicate(predicate);
                     blackboard.postInfo("查询到%d行".formatted(rows.length));
                     return rows;
                 },
-                new String[0][0]
+                new Object[0][0]
         );
     }
 

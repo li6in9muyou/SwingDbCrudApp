@@ -97,21 +97,21 @@ public class Fetch implements DbClient, HelpfulDbClient {
     }
 
     @Override
-    public String[][] fetchPredicate(String predicate) {
+    public Object[][] fetchPredicate(String predicate) {
         try (Connection connection = sql2o.open()) {
             List<Row> rows = connection
                     .createQuery("select * from %s where %s".formatted(tableName, predicate))
                     .executeAndFetchTable().rows();
             int colCnt = getColumnCount();
-            ArrayList<String[]> ans = new ArrayList<>(rows.size());
+            ArrayList<Object[]> ans = new ArrayList<>(rows.size());
             for (Row row : rows) {
-                String[] rowText = new String[colCnt];
+                Object[] thisRow = new Object[colCnt];
                 for (int i = 0; i < colCnt; i++) {
-                    rowText[i] = row.getString(i);
+                    thisRow[i] = row.getObject(i);
                 }
-                ans.add(rowText);
+                ans.add(thisRow);
             }
-            return ans.toArray(String[][]::new);
+            return ans.toArray(Object[][]::new);
         }
     }
 
