@@ -9,5 +9,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="ibm.db2.jcc.db2jcc" level="project" />
     <orderEntry type="library" name="sql2o" level="project" />
+    <orderEntry type="library" name="github.jsqlparser" level="project" />
   </component>
 </module>

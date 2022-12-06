@@ -1,3 +1,6 @@
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+
 import java.util.ArrayList;
 
 public class FetchDecorator {
@@ -44,14 +47,21 @@ public class FetchDecorator {
     }
 
     public String[][] fetchPredicate(String predicate) {
-        return errorReporter.catchQuery(
-                () -> {
-                    String[][] rows = fetch.fetchPredicate(predicate);
-                    blackboard.postInfo("查询到%d行".formatted(rows.length));
-                    return rows;
-                },
-                new String[0][0]
-        );
+        try {
+            CCJSqlParserUtil.parseCondExpression(predicate);
+            return errorReporter.catchQuery(
+                    () -> {
+                        String[][] rows = fetch.fetchPredicate(predicate);
+                        blackboard.postInfo("查询到%d行".formatted(rows.length));
+                        return rows;
+                    },
+                    new String[0][0]
+            );
+        } catch (JSQLParserException e) {
+            blackboard.postError("谓词不正确");
+            errorReporter.reportError(e);
+            return new String[0][0];
+        }
     }
 
     public void createRows(String[][] rows) {
