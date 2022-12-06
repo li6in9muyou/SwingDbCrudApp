@@ -12,7 +12,12 @@ public class FetchDecorator {
     }
 
     public String[] getColumnHeaders() {
-        return fetch.getColumnHeaders();
+        try {
+            return fetch.getColumnHeaders();
+        } catch (Exception e) {
+            errorReporter.reportError(e);
+            return new String[0];
+        }
     }
 
     public int getPrimaryKeyColumn() {
